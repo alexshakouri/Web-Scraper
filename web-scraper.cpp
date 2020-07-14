@@ -2,10 +2,14 @@
 #include <string>
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
+#include <include/tidy.h>
+
+//#include <libxml/tree.h>
 
 //Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
 CURLcode curl_setup(CURL* curl_conn, const char *URL_name, std::string *html_buffer);
+void print_html(xmlNode *html_tree_node);
 
 int main(){
     CURL *curl_conn;
@@ -27,19 +31,31 @@ int main(){
 
     //Output html
     curl_output = curl_easy_perform(curl_conn);
-    std::cout << curl_easy_strerror(curl_output) << std::endl;
+    if(curl_output != CURLE_OK){
+        std::cout << curl_easy_strerror(curl_output) << std::endl;
+    }
     curl_easy_cleanup(curl_conn);
 
-    /* 
-    //Read the HTML
-    htmlParserCtxtPtr html_read;
+/*
+    //Clean up html and output xml    
+    TidyDoc tidy_html = tidyCreate();
     
-    html_read = htmlCreateMemoryParserCtxt(html_buffer.c_str(), 0);
-    if(html_read == NULL){
-        std::cerr << "Failed to create html parser" << std::endl;
-        return -1;
-    }
-    */
+    tidyRelease(tidy_html);
+*/
+
+/*  
+    //Read the HTML
+    htmlDocPtr html_tree;
+    xmlNode *root_element;    
+
+    html_buffer = curl_output;
+
+    html_tree = htmlReadMemory(html_buffer.c_str(),sizeof(html_buffer.c_str()), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+        
+    root_element = xmlDocGetRootElement(html_tree);    
+
+    print_html(root_element);
+*/
     return 0;
 }
 
@@ -47,7 +63,6 @@ int curl_write(char* data, size_t size, size_t data_size, std::string *write_dat
     if(write_data == NULL){
         return 0;
     }
-
     write_data->append(data, size*data_size);
     return size*data_size;
 }
@@ -74,3 +89,12 @@ CURLcode curl_setup(CURL*curl_conn, const char *URL_name, std::string *html_buff
     return setup_output;
 }
 
+void print_html(xmlNode *html_tree_node){
+    if(html_tree_node == NULL){
+        std::cout << "NOTHING IN NODE" << std::endl;
+        return;
+    }
+
+    std::cout << "Name: " << html_tree_node->name << " : Content" << html_tree_node->content << std::endl;
+
+}
