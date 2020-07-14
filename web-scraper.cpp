@@ -8,33 +8,33 @@
 
 //Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
-CURLcode curl_setup(CURL* curl_conn, const char *URL_name, std::string *html_buffer);
+CURLcode curl_initialization(CURL* curl_connection, const char *URL_name, std::string *html_buffer);
 void print_html(xmlNode *html_tree_node);
 
 int main(){
-    CURL *curl_conn;
+    CURL *curl_connection;
     CURLcode curl_output;
     std::string html_buffer;
     const char *URL_name = "https://www.google.com";
 
-    curl_conn = curl_easy_init();
-    if(curl_conn == NULL){
+    curl_connection = curl_easy_init();
+    if(curl_connection == NULL){
         std::cerr << "Failed to create CURL connection" << std::endl;
         return -1;
     }
 
-    curl_output = curl_setup(curl_conn, URL_name, &html_buffer);
+    curl_output = curl_initialization(curl_connection, URL_name, &html_buffer);
     if(curl_output != CURLE_OK){
         std::cerr << "curl setup failed: " << curl_easy_strerror(curl_output) << std::endl;
         return -1;
     }
 
     //Output html
-    curl_output = curl_easy_perform(curl_conn);
+    curl_output = curl_easy_perform(curl_connection);
     if(curl_output != CURLE_OK){
         std::cout << curl_easy_strerror(curl_output) << std::endl;
     }
-    curl_easy_cleanup(curl_conn);
+    curl_easy_cleanup(curl_connection);
 
 /*
     //Clean up html and output xml    
@@ -48,10 +48,7 @@ int main(){
     htmlDocPtr html_tree;
     xmlNode *root_element;    
 
-    html_buffer = curl_output;
-
     html_tree = htmlReadMemory(html_buffer.c_str(),sizeof(html_buffer.c_str()), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
-        
     root_element = xmlDocGetRootElement(html_tree);    
 
     print_html(root_element);
@@ -67,20 +64,20 @@ int curl_write(char* data, size_t size, size_t data_size, std::string *write_dat
     return size*data_size;
 }
 
-CURLcode curl_setup(CURL*curl_conn, const char *URL_name, std::string *html_buffer){
+CURLcode curl_initialization(CURL*curl_connection, const char *URL_name, std::string *html_buffer){
     CURLcode setup_output; 
 
-    setup_output = curl_easy_setopt(curl_conn, CURLOPT_URL, URL_name);
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, URL_name);
     if(setup_output != CURLE_OK){
         return setup_output;
     }
    
-    setup_output = curl_easy_setopt(curl_conn, CURLOPT_WRITEFUNCTION, curl_write);
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_WRITEFUNCTION, curl_write);
     if(setup_output != CURLE_OK){
         return setup_output;
     }
  
-    setup_output = curl_easy_setopt(curl_conn, CURLOPT_WRITEDATA, html_buffer);
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_WRITEDATA, html_buffer);
     if(setup_output != CURLE_OK){
         std::cerr << "Failed to write to html buffer" << std::endl;
         return setup_output;
@@ -96,5 +93,4 @@ void print_html(xmlNode *html_tree_node){
     }
 
     std::cout << "Name: " << html_tree_node->name << " : Content" << html_tree_node->content << std::endl;
-
 }
