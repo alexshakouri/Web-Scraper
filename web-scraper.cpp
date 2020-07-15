@@ -41,7 +41,8 @@ int main(){
     TidyDoc tidy_doc = tidyCreate();
     TidyBuffer tidy_html_buffer = {};
     int tidy_output = -1;    
-
+    
+    //TODO::Figure out why tidyOptSetBool() alwasys returns false
     tidy_output = tidyParseString(tidy_doc, html_buffer.c_str());
     tidy_output = tidyCleanAndRepair(tidy_doc);
     tidy_output = tidySaveBuffer(tidy_doc, &tidy_html_buffer);    
@@ -52,7 +53,7 @@ int main(){
 
     const char* tidy_html_output = reinterpret_cast<const char*>(tidy_html_buffer.bp);
   
-/*
+/*TODO::fix htmlReadMemory as it isn't parsing through the html
     //Read the HTML
     htmlDocPtr html_tree;
     xmlNode *root_element;    
@@ -96,6 +97,7 @@ CURLcode curl_initialization(CURL*curl_connection, const char *URL_name, std::st
     return setup_output;
 }
 
+//TODO::fix print_html to print the entire tree or certain name
 void print_html(xmlNode *html_tree_node){
     if(html_tree_node == NULL){
         std::cout << "NOTHING IN NODE" << std::endl;
