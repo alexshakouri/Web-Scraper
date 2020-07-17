@@ -52,7 +52,7 @@ int main(){
     //TODO::fix htmlReadMemory as it isn't parsing through the html
     //Read the HTML
     htmlDocPtr html_tree;
-    xmlNode *root_element;    
+    xmlNode *root_element;
 
     html_tree = htmlReadMemory(tidy_html_output, strlen(tidy_html_output), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     root_element = xmlDocGetRootElement(html_tree);
