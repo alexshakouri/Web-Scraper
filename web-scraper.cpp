@@ -2,8 +2,8 @@
 #include <string>
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
-#include <tidy/tidy.h>
-#include <tidy/tidybuffio.h>
+#include <tidy.h>
+#include <tidybuffio.h>
 
 //#include <libxml/tree.h>
 
