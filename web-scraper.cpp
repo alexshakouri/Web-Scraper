@@ -4,18 +4,21 @@
 #include <libxml/HTMLparser.h>
 #include <tidy.h>
 #include <tidybuffio.h>
-
-#include <libxml/xmlsave.h>
+//TODO::implement for multiple websites
 
 //Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
 CURLcode curl_initialization(CURL* curl_connection, const char *URL_name, std::string *html_buffer);
 void print_html(xmlNode *html_tree_node);
 
+//TODO::include user input with error checks
 int main(){
+    //TODO::create initialization.cpp/.h to read the html
     CURL *curl_connection;
     CURLcode curl_output;
     std::string html_buffer;
+    
+    //TODO::change this to amazon search URL where user inputs string
     const char *URL_name = "https://www.google.com";
 
     curl_connection = curl_easy_init();
@@ -36,60 +39,16 @@ int main(){
         std::cout << curl_easy_strerror(curl_output) << std::endl;
     }
     curl_easy_cleanup(curl_connection);
-
-    //Clean up html and output xml    
-    TidyDoc tidy_doc = tidyCreate();
-    TidyBuffer tidy_html_buffer = {};
-    int tidy_output = -1;    
-    
-    //TODO::Figure out why tidyOptSetBool() alwasys returns false
-    tidy_output = tidyParseString(tidy_doc, html_buffer.c_str());
-    if(tidy_output > 1){
-        std::cerr << "problem parsing html with libtidy" << std::endl;
-    }
-    tidy_output = tidyCleanAndRepair(tidy_doc);
-    if(tidy_output > 1){
-        std::cerr << "problem cleaning html with libtidy" << std::endl;
-    }
-    tidy_output = tidySaveBuffer(tidy_doc, &tidy_html_buffer);    
-    if(tidy_output > 1){
-        std::cerr << "problem saving html with libtidy" << std::endl;
-    }
-    tidyRelease(tidy_doc);
-
-    //const char* tidy_html_output = reinterpret_cast<const char*>(tidy_html_buffer.bp);
- 
-    //TODO::fix htmlReadMemory as it isn't parsing through the html
+   
     //Read the HTML
     htmlDocPtr html_tree;
     xmlNode *root_element;    
-    //Test with basic html
-    static const char *html_test = "<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>";
 
-    html_tree = htmlReadMemory(html_test, strlen(html_test), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    html_tree = htmlReadMemory(html_buffer.c_str(), strlen(html_buffer.c_str()), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     root_element = xmlDocGetRootElement(html_tree);
 
-    xmlBufferPtr buffer = xmlBufferCreate();
-    if (buffer ==  NULL){
-        return 1; 
-    }
-
-    xmlSaveCtxtPtr saveCtxtPtr = xmlSaveToBuffer(buffer,NULL, XML_SAVE_NO_DECL);
-    if (xmlSaveDoc(saveCtxtPtr, html_tree) < 0){
-        return 1;
-    }
-
-    xmlSaveClose(saveCtxtPtr);
-
-    const xmlChar *xmlCharBuffer = xmlBufferContent(buffer);
-    //print read in html
-    std::cout << xmlCharBuffer << std::endl;
-
-    xmlBufferFree(buffer);
     xmlFreeDoc(html_tree);    
-
     print_html(root_element);
-
     xmlCleanupParser();
 
     return 0;
@@ -125,7 +84,7 @@ CURLcode curl_initialization(CURL*curl_connection, const char *URL_name, std::st
     return setup_output;
 }
 
-//TODO::fix print_html to print the entire tree or certain name
+//TODO::fix print_html to parse_html to find certain nodes within the html tree
 void print_html(xmlNode *html_tree_node){
     if(html_tree_node == NULL){
         std::cout << "NOTHING IN NODE" << std::endl;
@@ -134,3 +93,5 @@ void print_html(xmlNode *html_tree_node){
 
     std::cout << "Name: " << html_tree_node->name << " | Content: " << html_tree_node->content << std::endl;
 }
+
+//TODO::create display function to output content of specific node in html tree
