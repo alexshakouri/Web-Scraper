@@ -5,8 +5,6 @@
 #include <tidy.h>
 #include <tidybuffio.h>
 
-//#include <libxml/tree.h>
-
 //Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
 CURLcode curl_initialization(CURL* curl_connection, const char *URL_name, std::string *html_buffer);
@@ -46,23 +44,22 @@ int main(){
     tidy_output = tidyParseString(tidy_doc, html_buffer.c_str());
     tidy_output = tidyCleanAndRepair(tidy_doc);
     tidy_output = tidySaveBuffer(tidy_doc, &tidy_html_buffer);    
-
-    std::cout << tidy_output << " output: " << tidy_html_buffer.bp << std::endl;
  
     tidyRelease(tidy_doc);
 
     const char* tidy_html_output = reinterpret_cast<const char*>(tidy_html_buffer.bp);
   
-/*TODO::fix htmlReadMemory as it isn't parsing through the html
+    //TODO::fix htmlReadMemory as it isn't parsing through the html
     //Read the HTML
     htmlDocPtr html_tree;
     xmlNode *root_element;    
 
-    html_tree = htmlReadMemory(tidy_html_output,strlen(tidy_html_output), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
-    root_element = xmlDocGetRootElement(html_tree);    
+    html_tree = htmlReadMemory(tidy_html_output, strlen(tidy_html_output), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    root_element = xmlDocGetRootElement(html_tree);
 
-    print_html(root_element);
-*/
+    //print_html(root_element);
+
+    xmlCleanupParser();
 
     return 0;
 }
