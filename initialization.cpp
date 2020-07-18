@@ -3,7 +3,6 @@
 int curl_setup(const char *URL_name, std::string *html_buffer) {
     CURL *curl_connection;
     CURLcode curl_output;
-    //std::string html_buffer;
 
     curl_connection = curl_easy_init();
     if(curl_connection == NULL){
@@ -27,6 +26,7 @@ int curl_setup(const char *URL_name, std::string *html_buffer) {
     return 0;
 }
 
+//Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
         return 0;

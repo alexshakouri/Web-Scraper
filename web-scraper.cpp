@@ -3,12 +3,10 @@
 #include "initialization.h"
 //TODO::implement for multiple websites
 
-//Need this prototype to use with CURL_WRITEFUNCTION
 void print_html(xmlNode *html_tree_node);
 
 //TODO::include user input with error checks
 int main(){
-    //TODO::create initialization.cpp/.h to read the html
 	int curl_init_result = 0;
 	std::string html_buffer;
 
@@ -27,8 +25,6 @@ int main(){
 
     return 0;
 }
-
-
 
 //TODO::fix print_html to parse_html to find certain nodes within the html tree
 void print_html(xmlNode *html_tree_node){
