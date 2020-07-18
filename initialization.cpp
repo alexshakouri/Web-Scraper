@@ -62,7 +62,7 @@ xmlNodePtr xml_setup(std::string html_buffer) {
     htmlDocPtr html_tree;
     xmlNode *root_element;
 
-    html_tree = htmlReadMemory(html_buffer.c_str(), strlen(html_buffer.c_str()), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    html_tree = htmlReadMemory(html_buffer.c_str(), html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     root_element = xmlDocGetRootElement(html_tree);
 
     //TODO: fix cleanup for xml (e.g. create class for initialization)
