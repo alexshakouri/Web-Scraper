@@ -3,7 +3,6 @@
 int curl_setup(const char *URL_name, std::string *html_buffer) {
     CURL *curl_connection;
     CURLcode curl_output;
-    //std::string html_buffer;
 
     curl_connection = curl_easy_init();
     if(curl_connection == NULL){
@@ -27,6 +26,7 @@ int curl_setup(const char *URL_name, std::string *html_buffer) {
     return 0;
 }
 
+//Need this prototype to use with CURL_WRITEFUNCTION
 int curl_write(char* data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
         return 0;
@@ -62,7 +62,7 @@ xmlNodePtr xml_setup(std::string html_buffer) {
     htmlDocPtr html_tree;
     xmlNode *root_element;
 
-    html_tree = htmlReadMemory(html_buffer.c_str(), strlen(html_buffer.c_str()), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    html_tree = htmlReadMemory(html_buffer.c_str(), html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     root_element = xmlDocGetRootElement(html_tree);
 
     //TODO: fix cleanup for xml (e.g. create class for initialization)
