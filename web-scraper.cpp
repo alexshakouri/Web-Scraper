@@ -1,5 +1,3 @@
-#include <iostream>
-#include <string>
 #include "initialization.h"
 //TODO::implement for multiple websites
 
