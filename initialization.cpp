@@ -1,6 +1,6 @@
 #include "initialization.h"
 
-Initialization::Initialization(const char *URL_name)
+Initialization::Initialization(std::string URL_name)
     : URL_name(URL_name)
 {
 
@@ -22,7 +22,7 @@ int Initialization::curl_write(char* data, size_t size, size_t data_size, std::s
 CURLcode Initialization::curl_initialization(){
     CURLcode setup_output;
 
-    setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_URL, this->URL_name);
+    setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_URL, this->URL_name.c_str());
     if(setup_output != CURLE_OK){
         return setup_output;
     }

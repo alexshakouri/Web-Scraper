@@ -5,8 +5,9 @@ void print_html(xmlNode *html_tree_node);
 
 //TODO::include user input with error checks
 int main(){
-    //TODO::change this to amazon search URL where user inputs string
-    const char *URL_name = "https://www.google.com";
+	std::string user_input = "switch";
+	std::string URL_name = "https://www.amazon.com/s?k=";
+	URL_name.append(user_input);
 	Initialization scraper_init(URL_name);
 	int curl_init_result = 0;
 

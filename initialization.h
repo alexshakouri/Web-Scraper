@@ -8,7 +8,7 @@
 
 class Initialization {
 private:
-    const char *URL_name;
+    std::string URL_name;
 	std::string html_buffer;
     CURL *curl_connection;
     CURLcode curl_output;
@@ -20,7 +20,7 @@ private:
     void xml_cleanup();
 
 public:
-	Initialization(const char *url);
+	Initialization(std::string url);
 	~Initialization();
 
     int curl_setup();
