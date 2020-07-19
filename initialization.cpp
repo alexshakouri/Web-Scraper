@@ -13,6 +13,7 @@ Initialization::~Initialization() {
 //Need this prototype to use with CURL_WRITEFUNCTION
 int Initialization::curl_write(char* data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
+       	std::cerr << "Writer function data is empty" << std::endl;
         return 0;
     }
     write_data->append(data, size*data_size);
@@ -24,11 +25,13 @@ CURLcode Initialization::curl_initialization(){
 
     setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_URL, this->URL_name.c_str());
     if(setup_output != CURLE_OK){
+        	std::cerr << "Failed to set URL" << std::endl;
         return setup_output;
     }
 
     setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_WRITEFUNCTION, curl_write);
     if(setup_output != CURLE_OK){
+    	    std::cerr << "Failed to set Write function" << std::endl;
         return setup_output;
     }
 
@@ -57,7 +60,7 @@ int Initialization::curl_setup() {
     //Output html
     this->curl_output = curl_easy_perform(this->curl_connection);
     if(this->curl_output != CURLE_OK){
-        std::cout << curl_easy_strerror(this->curl_output) << std::endl;
+        std::cerr << "curl_easy_perform failed: " << curl_easy_strerror(this->curl_output) << std::endl;
     }
     curl_easy_cleanup(this->curl_connection);
 
@@ -68,6 +71,10 @@ void Initialization::xml_setup() {
     //Read the HTML
     this->html_tree = htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     this->root_element = xmlDocGetRootElement(this->html_tree);
+
+    if(this->root_element == NULL){
+        std::cerr << "Unable to obtain html_tree" << std::endl;
+    }
 }
 
 void Initialization::xml_cleanup() {
