@@ -6,10 +6,11 @@ void print_html(xmlNode *html_tree_node);
 //TODO::include user input with error checks
 int main(){
 	int curl_init_result = 0;
-	std::string html_buffer;
+    std::string html_buffer;
+    std::string user_input = "switch";
 
-    //TODO::change this to amazon search URL where user inputs string
-    const char *URL_name = "https://www.google.com";
+    std::string URL_name = "https://www.amazon.com/s?k=";
+    URL_name.append(user_input);
 
     curl_init_result = curl_setup(URL_name, &html_buffer);
     if (curl_init_result == -1) {

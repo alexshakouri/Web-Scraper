@@ -1,6 +1,6 @@
 #include "initialization.h"
 
-int curl_setup(const char *URL_name, std::string *html_buffer) {
+int curl_setup(std::string URL_name, std::string *html_buffer) {
     CURL *curl_connection;
     CURLcode curl_output;
 
@@ -10,7 +10,7 @@ int curl_setup(const char *URL_name, std::string *html_buffer) {
         return -1;
     }
 
-    curl_output = curl_initialization(curl_connection, URL_name, html_buffer);
+    curl_output = curl_initialization(curl_connection, URL_name.c_str(), html_buffer);
     if(curl_output != CURLE_OK){
         std::cerr << "curl setup failed: " << curl_easy_strerror(curl_output) << std::endl;
         return -1;
@@ -35,10 +35,10 @@ int curl_write(char* data, size_t size, size_t data_size, std::string *write_dat
     return size*data_size;
 }
 
-CURLcode curl_initialization(CURL*curl_connection, const char *URL_name, std::string *html_buffer){
+CURLcode curl_initialization(CURL*curl_connection, std::string URL_name, std::string *html_buffer){
     CURLcode setup_output;
 
-    setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, URL_name);
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, URL_name.c_str());
     if(setup_output != CURLE_OK){
         return setup_output;
     }
