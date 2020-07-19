@@ -11,7 +11,7 @@ Initialization::~Initialization() {
 }
 
 //Need this prototype to use with CURL_WRITEFUNCTION
-int Initialization::curl_write(char* data, size_t size, size_t data_size, std::string *write_data){
+int Initialization::curl_write(char *data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
        	std::cerr << "Writer function data is empty" << std::endl;
         return 0;
@@ -31,7 +31,7 @@ CURLcode Initialization::curl_initialization(){
 
     setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_WRITEFUNCTION, curl_write);
     if(setup_output != CURLE_OK){
-    	    std::cerr << "Failed to set Write function" << std::endl;
+    	    std::cerr << "Failed to set write function" << std::endl;
         return setup_output;
     }
 
@@ -84,4 +84,12 @@ void Initialization::xml_cleanup() {
 
 xmlNodePtr Initialization::get_root_element() {
     return this->root_element;
+}
+
+std::string Initialization::get_html_buffer(){
+    return this->html_buffer;
+}
+
+htmlDocPtr Initialization::get_html_tree(){
+    return this->html_tree;
 }

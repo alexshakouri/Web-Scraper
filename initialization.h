@@ -26,6 +26,9 @@ public:
     int curl_setup();
     void xml_setup();
     xmlNodePtr get_root_element();
+    std::string get_html_buffer();
+    htmlDocPtr get_html_tree();
+
 };
 
 #endif //INITIALIZATION_H

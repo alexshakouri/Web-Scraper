@@ -18,8 +18,16 @@ int main(){
 
     xmlNode *root_element;
     scraper_init.xml_setup();
-    //TODO:: Fix bug where occasionally the html returns the wrong thing (html -> body)
+    //TODO:: Fix bug where occasionally the html returns the wrong html
+    //Looks like the char *data in curl_write() are bad characters sometimes*
     root_element = scraper_init.get_root_element();
+
+    std::string test = scraper_init.get_html_buffer();
+    htmlDocPtr test2 = scraper_init.get_html_tree();
+
+    if(test2){
+        std::cout << test << std::endl;
+    }
 
     find_price(root_element);
 
