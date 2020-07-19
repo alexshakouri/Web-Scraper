@@ -20,7 +20,7 @@ private:
     void xml_cleanup();
 
 public:
-	Initialization(std::string url);
+	Initialization(std::string URL_name);
 	~Initialization();
 
     int curl_setup();
