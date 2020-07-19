@@ -1,7 +1,7 @@
 #include "initialization.h"
 //TODO::implement for multiple websites
-
-void print_html(xmlNode *html_tree_node);
+void save_content(xmlNode *html_tree_node, std::string &content);
+void find_price(xmlNode *html_tree_node);
 
 //TODO::include user input with error checks
 int main(){
@@ -18,21 +18,32 @@ int main(){
 
     xmlNode *root_element;
     scraper_init.xml_setup();
+    //TODO:: Fix bug where occasionally the html returns the wrong thing (html -> body)
     root_element = scraper_init.get_root_element();
 
-    print_html(root_element);
+    find_price(root_element);
 
     return 0;
 }
 
 //TODO::fix print_html to parse_html to find certain nodes within the html tree
-void print_html(xmlNode *html_tree_node){
-    if(html_tree_node == NULL){
-        std::cout << "NOTHING IN NODE" << std::endl;
-        return;
-    }
+void find_price(xmlNode *html_tree_node){
+    std::string content;
 
-    std::cout << "Name: " << html_tree_node->name << " | Content: " << html_tree_node->content << std::endl;
+    save_content(html_tree_node->children->next->next->children->children, content);
+
+    std::cout << "Content: " << content << std::endl;
 }
 
-//TODO::create display function to output content of specific node in html tree
+//
+void save_content(xmlNode *html_tree_node, std::string &content){
+    
+    if(html_tree_node->type == XML_CDATA_SECTION_NODE){
+        //TODO::Find way to save content here even if it contains '/n' (std::string s( reinterpret_cast<char const*>(uc), len)
+        content = reinterpret_cast<char*>(html_tree_node->content);
+    }
+    else{
+        std::cerr << "Node is not of type XML_CDATA_SECTION_NODE" << std::endl;
+    }
+  
+}
