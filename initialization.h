@@ -6,10 +6,26 @@
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
 
-int curl_setup(const char *URL_name, std::string *html_buffer);
-xmlNodePtr xml_setup(std::string html_buffer);
+class Initialization {
+private:
+    const char *URL_name;
+	std::string html_buffer;
+    CURL *curl_connection;
+    CURLcode curl_output;
+    htmlDocPtr html_tree;
+    xmlNode *root_element;
 
-int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
-CURLcode curl_initialization(CURL* curl_connection, const char *URL_name, std::string *html_buffer);
+    static int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
+    CURLcode curl_initialization();
+    void xml_cleanup();
+
+public:
+	Initialization(const char *url);
+	~Initialization();
+
+    int curl_setup();
+    void xml_setup();
+    xmlNodePtr get_root_element();
+};
 
 #endif //INITIALIZATION_H

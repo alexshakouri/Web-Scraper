@@ -5,19 +5,19 @@ void print_html(xmlNode *html_tree_node);
 
 //TODO::include user input with error checks
 int main(){
-	int curl_init_result = 0;
-	std::string html_buffer;
-
     //TODO::change this to amazon search URL where user inputs string
     const char *URL_name = "https://www.google.com";
+	Initialization scraper_init(URL_name);
+	int curl_init_result = 0;
 
-    curl_init_result = curl_setup(URL_name, &html_buffer);
+    curl_init_result = scraper_init.curl_setup();
     if (curl_init_result == -1) {
     	    return -1;
     }
 
     xmlNode *root_element;
-    root_element = xml_setup(html_buffer);
+    scraper_init.xml_setup();
+    root_element = scraper_init.get_root_element();
 
     print_html(root_element);
 
