@@ -41,6 +41,13 @@ CURLcode Initialization::curl_initialization(){
         return setup_output;
     }
 
+    //Enable built in compression encoding
+    setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_ACCEPT_ENCODING, "");
+    if(setup_output != CURLE_OK){
+        std::cerr << "Failed to set compression encoding" << std::endl;
+        return setup_output;
+    }
+
     return setup_output;
 }
 

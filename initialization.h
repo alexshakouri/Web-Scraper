@@ -5,6 +5,7 @@
 #include <string>
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
+#include <algorithm>
 
 class Initialization {
 private:

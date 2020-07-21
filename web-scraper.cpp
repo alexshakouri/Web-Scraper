@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
         return 0;
     }
 	std::string URL_name = "https://www.amazon.com/s?k=";
-	URL_name.append(user_input);
+    URL_name.append(user_input);
 
 	Initialization scraper_init(URL_name);
 	int curl_init_result = 0;
@@ -32,16 +32,7 @@ int main(int argc, char *argv[]){
 
     xmlNode *root_element;
     scraper_init.xml_setup();
-    //TODO:: Fix bug where occasionally the html returns the wrong html
-    //Looks like the char *data in curl_write() are bad characters sometimes*
     root_element = scraper_init.get_root_element();
-
-    std::string test = scraper_init.get_html_buffer();
-    htmlDocPtr test2 = scraper_init.get_html_tree();
-
-    if(test2){
-        std::cout << test << std::endl;
-    }
 
     find_price(root_element);
 
