@@ -11,7 +11,7 @@ Initialization::~Initialization() {
 }
 
 //Need this prototype to use with CURL_WRITEFUNCTION
-int Initialization::curl_write(char* data, size_t size, size_t data_size, std::string *write_data){
+int Initialization::curl_write(char *data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
        	std::cerr << "Writer function data is empty" << std::endl;
         return 0;
@@ -31,13 +31,20 @@ CURLcode Initialization::curl_initialization(){
 
     setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_WRITEFUNCTION, curl_write);
     if(setup_output != CURLE_OK){
-    	    std::cerr << "Failed to set Write function" << std::endl;
+    	    std::cerr << "Failed to set write function" << std::endl;
         return setup_output;
     }
 
     setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_WRITEDATA, &this->html_buffer);
     if(setup_output != CURLE_OK){
         std::cerr << "Failed to write to html buffer" << std::endl;
+        return setup_output;
+    }
+
+    //Enable built in compression encoding
+    setup_output = curl_easy_setopt(this->curl_connection, CURLOPT_ACCEPT_ENCODING, "");
+    if(setup_output != CURLE_OK){
+        std::cerr << "Failed to set compression encoding" << std::endl;
         return setup_output;
     }
 
@@ -91,6 +98,10 @@ xmlNodePtr Initialization::get_root_element() {
     return this->root_element;
 }
 
-std::string Initialization::get_html_buffer() {
+std::string Initialization::get_html_buffer(){
     return this->html_buffer;
+}
+
+htmlDocPtr Initialization::get_html_tree(){
+    return this->html_tree;
 }
