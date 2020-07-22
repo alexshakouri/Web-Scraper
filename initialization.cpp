@@ -62,6 +62,11 @@ int Initialization::curl_setup() {
     if(this->curl_output != CURLE_OK){
         std::cerr << "curl_easy_perform failed: " << curl_easy_strerror(this->curl_output) << std::endl;
     }
+
+    long response_code;
+    curl_easy_getinfo(curl_connection, CURLINFO_RESPONSE_CODE, &response_code);
+    std::cout << "response code: " << response_code << std::endl;
+
     curl_easy_cleanup(this->curl_connection);
 
     return 0;
@@ -84,4 +89,8 @@ void Initialization::xml_cleanup() {
 
 xmlNodePtr Initialization::get_root_element() {
     return this->root_element;
+}
+
+std::string Initialization::get_html_buffer() {
+    return this->html_buffer;
 }
