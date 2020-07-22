@@ -28,11 +28,7 @@ public:
     void xml_setup();
     xmlNodePtr get_root_element();
     std::string get_html_buffer();
-<<<<<<< HEAD
-=======
     htmlDocPtr get_html_tree();
-
->>>>>>> b9aac2d66d4f107a8d320144b4d0864f3dcd9941
 };
 
 #endif //INITIALIZATION_H

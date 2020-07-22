@@ -7,17 +7,13 @@ std::string spaces_to_underscores(std::string user_input);
 //TODO::include user input with error checks
 int main(int argc, char *argv[]){
 	std::string user_input = "";
-    if(argc == 2){ //only accepting one search result currently
-        user_input = spaces_to_underscores(argv[1]);
-        std::cout << "User Input: " << user_input << std::endl;
-    }
-    else if(argc == 1){
+    if(argc == 1){
     	    std::cerr << "Defaulting search to 'switch'." << std::endl;
     	    user_input = "switch";
     }
     else{
-    		std::cerr << "Too many arguments given. Exiting program." << std::endl;
-        return 0;
+        user_input = spaces_to_underscores(argv[1]);
+        std::cout << "User Input: " << user_input << std::endl;
     }
 	std::string URL_name = "https://www.amazon.com/s?k=";
     URL_name.append(user_input);
