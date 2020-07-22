@@ -1,7 +1,6 @@
 #include "initialization.h"
 
-Initialization::Initialization(std::string URL_name)
-    : URL_name(URL_name)
+Initialization::Initialization()
 {
 
 }
@@ -82,9 +81,9 @@ int Initialization::curl_setup() {
 void Initialization::xml_setup() {
     //Read the HTML
     this->html_tree = htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
-    this->root_element = xmlDocGetRootElement(this->html_tree);
+    this->root_element.push_back(xmlDocGetRootElement(this->html_tree));
 
-    if(this->root_element == NULL){
+    if(this->root_element.back() == NULL){
         std::cerr << "Unable to obtain html_tree" << std::endl;
     }
 }
@@ -94,8 +93,8 @@ void Initialization::xml_cleanup() {
     xmlCleanupParser();
 }
 
-xmlNodePtr Initialization::get_root_element() {
-    return this->root_element;
+xmlNodePtr Initialization::get_last_root_element() {
+    return this->root_element.back();
 }
 
 std::string Initialization::get_html_buffer(){
@@ -104,4 +103,8 @@ std::string Initialization::get_html_buffer(){
 
 htmlDocPtr Initialization::get_html_tree(){
     return this->html_tree;
+}
+
+void Initialization::set_URL_name(std::string URL_name){
+    this->URL_name = URL_name;
 }
