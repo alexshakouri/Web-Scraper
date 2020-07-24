@@ -18,24 +18,37 @@ int main(int argc, char *argv[]){
         user_input = spaces_to_underscores(argv[1]);
         std::cout << "User Input: " << user_input << std::endl;
     }
-	std::string URL_name = "https://www.amazon.com/s?k=";
-    URL_name.append(user_input);
 
-	Initialization scraper_init(URL_name);
-	int curl_init_result = 0;
+    std::vector<std::string> url_names;
+	std::string amazon_URL = "https://www.amazon.com/s?k=";
+	//TODO::bestbuy URL curl output giving 403
+    //possibly bestbuy doesn't allow webscraping
+    std::string bestbuy_URL = "https://www.bestbuy.com/site/searchpage.jsp?st=";
+    amazon_URL.append(user_input);
+    bestbuy_URL.append(user_input);
+    url_names.push_back(amazon_URL);
+    url_names.push_back(bestbuy_URL);
 
-    curl_init_result = scraper_init.curl_setup();
-    if (curl_init_result == -1) {
-    	    return -1;
+    Initialization scraper_init;
+    std::vector<xmlNode *> root_element;
+    int curl_init_result = 0;
+
+    for(std::vector<std::string>::iterator url = url_names.begin(); url != url_names.end(); ++url){
+        scraper_init.set_URL_name(*url);
+
+        curl_init_result = scraper_init.curl_setup();
+        if (curl_init_result == -1) {
+        	    return -1;
+        }
+
+        scraper_init.xml_setup();
+
+        root_element.push_back(scraper_init.get_last_root_element());
     }
-
-    xmlNode *root_element;
-    scraper_init.xml_setup();
-    root_element = scraper_init.get_root_element();
 
     std::string price;
     bool found_price = false;
-    find_content(root_element, price, found_price);
+    find_content(root_element[0], price, found_price);
     if(found_price == false){
         std::cout << "No Price Found" << std::endl;
     }
@@ -88,6 +101,6 @@ void save_content(xmlNode *html_tree_node, std::string &content){
 }
 
 std::string spaces_to_underscores(std::string input_string){
-    std::replace(input_string.begin(), input_string.end(), ' ', '_');
+    std::replace(input_string.begin(), input_string.end(), ' ', '+');
     return input_string;
 }
