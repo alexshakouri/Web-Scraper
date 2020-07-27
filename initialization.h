@@ -5,7 +5,6 @@
 #include <string>
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
-#include <algorithm>
 #include <vector>
 
 class Initialization {
@@ -15,6 +14,7 @@ private:
     CURL *curl_connection;
     CURLcode curl_output;
     htmlDocPtr html_tree;
+    //TODO::make root_element a uniquer pointer to deal with dynamic allocation 
     //std::vector< std::unique_ptr<xmlNode> > root_element;
     std::vector<xmlNode *> root_element;
 

@@ -1,7 +1,10 @@
 #include "initialization.h"
+#include <algorithm>
+#include <string.h>
+
 //TODO::implement for multiple websites
 void save_content(xmlNode *html_tree_node, std::string &content);
-void find_price(xmlNode *html_tree_node);
+void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price);
 std::string spaces_to_underscores(std::string user_input);
 
 //TODO::include user input with error checks
@@ -18,7 +21,9 @@ int main(int argc, char *argv[]){
 
     std::vector<std::string> url_names;
 	std::string amazon_URL = "https://www.amazon.com/s?k=";
-	std::string bestbuy_URL = "https://www.bestbuy.com/site/searchpage.jsp?st=";
+	//TODO::bestbuy URL curl output giving 403
+    //possibly bestbuy doesn't allow webscraping
+    std::string bestbuy_URL = "https://www.bestbuy.com/site/searchpage.jsp?st=";
     amazon_URL.append(user_input);
     bestbuy_URL.append(user_input);
     url_names.push_back(amazon_URL);
@@ -29,36 +34,63 @@ int main(int argc, char *argv[]){
     int curl_init_result = 0;
 
     for(std::vector<std::string>::iterator url = url_names.begin(); url != url_names.end(); ++url){
-    	    scraper_init.set_URL_name(*url);
+        scraper_init.set_URL_name(*url);
 
-    	    curl_init_result = scraper_init.curl_setup();
-    	    if (curl_init_result == -1) {
-    	    	    return -1;
-    	    }
+        curl_init_result = scraper_init.curl_setup();
+        if (curl_init_result == -1) {
+        	    return -1;
+        }
 
-    	    scraper_init.xml_setup();
+        scraper_init.xml_setup();
 
-    	    root_element.push_back(scraper_init.get_last_root_element());
+        root_element.push_back(scraper_init.get_last_root_element());
     }
 
-    //find_price(root_element);
+    std::string price;
+    bool found_price = false;
+    find_content(root_element[0], price, found_price);
+    if(found_price == false){
+        std::cout << "No Price Found" << std::endl;
+    }
+
+    std::cout << "price: " << price << std::endl;
 
     return 0;
 }
 
-//TODO::fix print_html to parse_html to find certain nodes within the html tree
-void find_price(xmlNode *html_tree_node){
-    std::string content;
+//TODO::Create another search function to return the pointer to the beginning of the search results
 
-    save_content(html_tree_node->children->next->next->children->children, content);
+//TODO::Adapt this function for multi-use for finding specific html tags
+void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price){
+    //In order to find the price I need to not only search through the children and next but properties node as well
+    if(html_tree_node == NULL || found_price){
+        return;
+    }   
 
-    std::cout << "Content: " << content << std::endl;
+    //TODO::Fix the if statements by putting them before
+    //TODO::Make the magical strings into global variables
+    if(html_tree_node->name != NULL){
+        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name),"span") == 0){
+            if(html_tree_node->properties != NULL){
+                if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->name), "class") == 0){
+                    if(html_tree_node->properties->children != NULL){
+                        if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->children->content), "a-offscreen") == 0){
+                            found_price = true;
+                            save_content(html_tree_node->children, price);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    find_content(html_tree_node->next, price, found_price);
+    find_content(html_tree_node->children, price, found_price);
 }
 
-//
 void save_content(xmlNode *html_tree_node, std::string &content){
     
-    if(html_tree_node->type == XML_CDATA_SECTION_NODE){
+    if(html_tree_node->type == XML_CDATA_SECTION_NODE || html_tree_node->type == XML_TEXT_NODE){
         //TODO::Find way to save content here even if it contains '/n' (std::string s( reinterpret_cast<char const*>(uc), len)
         content = reinterpret_cast<char*>(html_tree_node->content);
     }

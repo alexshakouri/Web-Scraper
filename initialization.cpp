@@ -69,6 +69,7 @@ int Initialization::curl_setup() {
         std::cerr << "curl_easy_perform failed: " << curl_easy_strerror(this->curl_output) << std::endl;
     }
 
+    //Output response code for curl
     long response_code;
     curl_easy_getinfo(curl_connection, CURLINFO_RESPONSE_CODE, &response_code);
     std::cout << "response code: " << response_code << std::endl;
