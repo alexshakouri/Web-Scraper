@@ -81,11 +81,13 @@ int Initialization::curl_setup() {
 void Initialization::xml_setup() {
     //Read the HTML
     this->html_tree = htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    //std::unique_ptr<xmlNode> temp(xmlDocGetRootElement(this->html_tree));
+    //this->root_element.push_back(std::move(temp));
     this->root_element.push_back(xmlDocGetRootElement(this->html_tree));
 
-    if(this->root_element.back() == NULL){
-        std::cerr << "Unable to obtain html_tree" << std::endl;
-    }
+    //if(this->root_element.back().get() == NULL){
+    //    std::cerr << "Unable to obtain html_tree" << std::endl;
+    //}
 }
 
 void Initialization::xml_cleanup() {
@@ -94,6 +96,7 @@ void Initialization::xml_cleanup() {
 }
 
 xmlNodePtr Initialization::get_last_root_element() {
+    //return this->root_element.back().get();
     return this->root_element.back();
 }
 
