@@ -11,8 +11,8 @@ std::string spaces_to_underscores(std::string user_input);
 int main(int argc, char *argv[]){
 	std::string user_input = "";
     if(argc == 1){
-    	    std::cerr << "Defaulting search to 'switch'." << std::endl;
-    	    user_input = "switch";
+        std::cerr << "Defaulting search to 'switch'." << std::endl;
+        user_input = "switch";
     }
     else{
         user_input = spaces_to_underscores(argv[1]);
@@ -20,8 +20,8 @@ int main(int argc, char *argv[]){
     }
 
     std::vector<std::string> url_names;
-	std::string amazon_URL = "https://www.amazon.com/s?k=";
-	//TODO::bestbuy URL curl output giving 403
+    std::string amazon_URL = "https://www.amazon.com/s?k=";
+    //TODO::bestbuy URL curl output giving 403
     //possibly bestbuy doesn't allow webscraping
     std::string bestbuy_URL = "https://www.bestbuy.com/site/searchpage.jsp?st=";
     amazon_URL.append(user_input);
@@ -33,12 +33,10 @@ int main(int argc, char *argv[]){
     std::vector<xmlNode *> root_element;
     int curl_init_result = 0;
 
-    for(std::vector<std::string>::iterator url = url_names.begin(); url != url_names.end(); ++url){
-        scraper_init.set_URL_name(*url);
-
-        curl_init_result = scraper_init.curl_setup();
+    for(int i = 0; i < url_names.size(); i++){
+        curl_init_result = scraper_init.curl_setup(url_names[i]);
         if (curl_init_result == -1) {
-        	    return -1;
+            return -1;
         }
 
         scraper_init.xml_setup();
