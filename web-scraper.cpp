@@ -70,7 +70,7 @@ void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price
         return;
     }   
 
-    if(html_tree_node->name != NULL && html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
+    if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
         if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_NODE_NAME) == 0){
             if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->name), AMZN_PROPERTIES_NAME) == 0){
                 if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->children->content), AMZN_PROPERTIES_CONTENT) == 0){
