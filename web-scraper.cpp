@@ -2,6 +2,10 @@
 #include <algorithm>
 #include <string.h>
 
+#define AMZN_NODE_NAME "span"
+#define AMZN_PROPERTIES_NAME "class"
+#define AMZN_PROPERTIES_CONTENT "a-offscreen"
+
 //TODO::implement for multiple websites
 void save_content(xmlNode *html_tree_node, std::string &content);
 void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price);
@@ -33,7 +37,7 @@ int main(int argc, char *argv[]){
     std::vector<xmlNode *> root_element;
     int curl_init_result = 0;
 
-    for(int i = 0; i < url_names.size(); i++){
+    for(unsigned int i = 0; i < url_names.size(); i++){
         curl_init_result = scraper_init.curl_setup(url_names[i]);
         if (curl_init_result == -1) {
             return -1;
@@ -50,8 +54,9 @@ int main(int argc, char *argv[]){
     if(found_price == false){
         std::cout << "No Price Found" << std::endl;
     }
-
-    std::cout << "price: " << price << std::endl;
+    else{
+        std::cout << "price: " << price << std::endl;
+    }
 
     return 0;
 }
@@ -65,18 +70,12 @@ void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price
         return;
     }   
 
-    //TODO::Fix the if statements by putting them before
-    //TODO::Make the magical strings into global variables
-    if(html_tree_node->name != NULL){
-        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name),"span") == 0){
-            if(html_tree_node->properties != NULL){
-                if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->name), "class") == 0){
-                    if(html_tree_node->properties->children != NULL){
-                        if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->children->content), "a-offscreen") == 0){
-                            found_price = true;
-                            save_content(html_tree_node->children, price);
-                        }
-                    }
+    if(html_tree_node->name != NULL && html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
+        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_NODE_NAME) == 0){
+            if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->name), AMZN_PROPERTIES_NAME) == 0){
+                if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->children->content), AMZN_PROPERTIES_CONTENT) == 0){
+                    found_price = true;
+                    save_content(html_tree_node->children, price);
                 }
             }
         }
