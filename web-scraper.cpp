@@ -1,4 +1,4 @@
-#include "initialization.h"
+#include "Html_Setup.h"
 #include <algorithm>
 #include <string.h>
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     url_names.push_back(amazon_URL);
     url_names.push_back(bestbuy_URL);
 
-    Initialization scraper_init;
+    Html_Setup scraper_init;
     std::vector<xmlNode *> root_element;
     int curl_init_result = 0;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
 
         scraper_init.xml_setup();
 
-        root_element.push_back(scraper_init.get_last_root_element());
+        root_element.push_back(scraper_init.get_root_element());
     }
 
     std::string price;

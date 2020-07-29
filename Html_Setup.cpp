@@ -1,16 +1,16 @@
-#include "initialization.h"
+#include "Html_Setup.h"
 
-Initialization::Initialization()
+Html_Setup::Html_Setup()
 {
 
 }
 
-Initialization::~Initialization() {
+Html_Setup::~Html_Setup() {
 	xml_cleanup();
 }
 
 //Need this prototype to use with CURL_WRITEFUNCTION
-int Initialization::curl_write(char *data, size_t size, size_t data_size, std::string *write_data){
+int Html_Setup::curl_write(char *data, size_t size, size_t data_size, std::string *write_data){
     if(write_data == NULL){
        	std::cerr << "Writer function data is empty" << std::endl;
         return 0;
@@ -19,7 +19,7 @@ int Initialization::curl_write(char *data, size_t size, size_t data_size, std::s
     return size*data_size;
 }
 
-CURLcode Initialization::curl_initialization(CURL *curl_connection, std::string URL_name){
+CURLcode Html_Setup::curl_initialization(CURL *curl_connection, std::string URL_name){
     CURLcode setup_output;
 
     setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, URL_name.c_str());
@@ -50,7 +50,7 @@ CURLcode Initialization::curl_initialization(CURL *curl_connection, std::string 
     return setup_output;
 }
 
-int Initialization::curl_setup(std::string URL_name) {
+int Html_Setup::curl_setup(std::string URL_name) {
     CURL *curl_connection;
     CURLcode curl_output;
 
@@ -83,34 +83,25 @@ int Initialization::curl_setup(std::string URL_name) {
     return 0;
 }
 
-void Initialization::xml_setup() {
+void Html_Setup::xml_setup() {
     //Read the HTML
-    this->html_tree.push_back(htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING));
-    //std::unique_ptr<xmlNode> temp(xmlDocGetRootElement(this->html_tree));
-    //this->root_element.push_back(std::move(temp));
-    this->root_element.push_back(xmlDocGetRootElement(this->html_tree.back()));
-
-    //if(this->root_element.back().get() == NULL){
-    //    std::cerr << "Unable to obtain html_tree" << std::endl;
-    //}
+    this->html_tree = htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
+    this->root_element = xmlDocGetRootElement(this->html_tree);
 }
 
-void Initialization::xml_cleanup() {
-    for(unsigned int i = 0; i < html_tree.size(); i++){
-        xmlFreeDoc(html_tree[i]);
-    }
+void Html_Setup::xml_cleanup() {
+    xmlFreeDoc(html_tree);
     xmlCleanupParser();
 }
 
-xmlNodePtr Initialization::get_last_root_element() {
-    //return this->root_element.back().get();
-    return this->root_element.back();
+xmlNodePtr Html_Setup::get_root_element() {
+    return this->root_element;
 }
 
-std::string Initialization::get_html_buffer(){
+std::string Html_Setup::get_html_buffer(){
     return this->html_buffer;
 }
 
-htmlDocPtr Initialization::get_html_tree(int index){
-    return this->html_tree[index];
+htmlDocPtr Html_Setup::get_html_tree(){
+    return this->html_tree;
 }
