@@ -96,7 +96,7 @@ void Initialization::xml_setup() {
 }
 
 void Initialization::xml_cleanup() {
-    for(int i = 0; i < html_tree.size(); i++){
+    for(unsigned int i = 0; i < html_tree.size(); i++){
         xmlFreeDoc(html_tree[i]);
     }
     xmlCleanupParser();
