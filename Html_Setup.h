@@ -9,19 +9,20 @@
 
 class Html_Setup {
 private:
+    std::string url_name;
     std::string html_buffer;
     htmlDocPtr html_tree;
     xmlNode * root_element;
 
     static int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
-    CURLcode curl_initialization(CURL *curl_connection, std::string url_name);
+    CURLcode curl_initialization(CURL *curl_connection);
     void xml_cleanup();
 
 public:
-    Html_Setup();
+    Html_Setup(std::string url_name);
     ~Html_Setup();
 
-    int curl_setup(std::string URL_name);
+    int curl_setup();
     void xml_setup();
     xmlNodePtr get_root_element();
     std::string get_html_buffer();

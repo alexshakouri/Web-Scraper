@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <string.h>
 
+//TODO::determine values for other websites (e.g. newegg.com)
 #define AMZN_NODE_NAME "span"
 #define AMZN_PROPERTIES_NAME "class"
 #define AMZN_PROPERTIES_CONTENT "a-offscreen"
@@ -24,38 +25,42 @@ int main(int argc, char *argv[]){
     }
 
     std::vector<std::string> url_names;
-    std::string amazon_URL = "https://www.amazon.com/s?k=";
+    std::string amazon_url = "https://www.amazon.com/s?k=";
     //TODO::bestbuy URL curl output giving 403
     //possibly bestbuy doesn't allow webscraping
-    std::string bestbuy_URL = "https://www.bestbuy.com/site/searchpage.jsp?st=";
-    amazon_URL.append(user_input);
-    bestbuy_URL.append(user_input);
-    url_names.push_back(amazon_URL);
-    url_names.push_back(bestbuy_URL);
+    std::string bestbuy_url = "https://www.bestbuy.com/site/searchpage.jsp?st=";
+    std::string newegg_url = "https://www.newegg.com/p/pl?d=";
 
-    Html_Setup scraper_init;
-    std::vector<xmlNode *> root_element;
+    amazon_url.append(user_input);
+    bestbuy_url.append(user_input);
+    newegg_url.append(user_input);
+    url_names.push_back(amazon_url);
+    url_names.push_back(bestbuy_url);
+    url_names.push_back(newegg_url);
+
+    std::vector<Html_Setup> scraper_init;
     int curl_init_result = 0;
+    std::string price;
+    bool found_price = false;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
-        curl_init_result = scraper_init.curl_setup(url_names[i]);
+        scraper_init.push_back( Html_Setup(url_names[i]) );
+
+        curl_init_result = scraper_init[i].curl_setup();
         if (curl_init_result == -1) {
             return -1;
         }
 
-        scraper_init.xml_setup();
+        scraper_init[i].xml_setup();
 
-        root_element.push_back(scraper_init.get_root_element());
-    }
-
-    std::string price;
-    bool found_price = false;
-    find_content(root_element[0], price, found_price);
-    if(found_price == false){
-        std::cout << "No Price Found" << std::endl;
-    }
-    else{
-        std::cout << "price: " << price << std::endl;
+        found_price = false;
+        find_content(scraper_init[i].get_root_element(), price, found_price);
+        if(found_price == false){
+            std::cout << "No Price Found" << std::endl;
+        }
+        else{
+            std::cout << "price: " << price << std::endl;
+        }
     }
 
     return 0;

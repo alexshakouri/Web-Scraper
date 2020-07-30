@@ -1,12 +1,15 @@
 #include "Html_Setup.h"
 
-Html_Setup::Html_Setup()
+Html_Setup::Html_Setup(std::string url_name)
+    : url_name(url_name),
+      html_tree(NULL),
+      root_element(NULL)
 {
 
 }
 
 Html_Setup::~Html_Setup() {
-	xml_cleanup();
+	//xml_cleanup();
 }
 
 //Need this prototype to use with CURL_WRITEFUNCTION
@@ -19,10 +22,10 @@ int Html_Setup::curl_write(char *data, size_t size, size_t data_size, std::strin
     return size*data_size;
 }
 
-CURLcode Html_Setup::curl_initialization(CURL *curl_connection, std::string URL_name){
+CURLcode Html_Setup::curl_initialization(CURL *curl_connection){
     CURLcode setup_output;
 
-    setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, URL_name.c_str());
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_URL, this->url_name.c_str());
     if(setup_output != CURLE_OK){
         std::cerr << "Failed to set URL" << std::endl;
         return setup_output;
@@ -50,7 +53,7 @@ CURLcode Html_Setup::curl_initialization(CURL *curl_connection, std::string URL_
     return setup_output;
 }
 
-int Html_Setup::curl_setup(std::string URL_name) {
+int Html_Setup::curl_setup() {
     CURL *curl_connection;
     CURLcode curl_output;
 
@@ -60,7 +63,7 @@ int Html_Setup::curl_setup(std::string URL_name) {
         return -1;
     }
 
-    curl_output = curl_initialization(curl_connection, URL_name.c_str());
+    curl_output = curl_initialization(curl_connection);
     if(curl_output != CURLE_OK){
         std::cerr << "curl setup failed: " << curl_easy_strerror(curl_output) << std::endl;
         return -1;
@@ -90,8 +93,10 @@ void Html_Setup::xml_setup() {
 }
 
 void Html_Setup::xml_cleanup() {
-    xmlFreeDoc(html_tree);
-    xmlCleanupParser();
+    if (html_tree != NULL) {
+        xmlFreeDoc(html_tree);
+        xmlCleanupParser();
+    }
 }
 
 xmlNodePtr Html_Setup::get_root_element() {
