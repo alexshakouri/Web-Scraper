@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <string.h>
 
+//TODO::move global variables to its own file
 //TODO::determine values for other websites (e.g. newegg.com)
 #define AMZN_PRICE_NODE_NAME "span"
 #define AMZN_PRICE_PROPERTIES_NAME "class"
@@ -10,6 +11,16 @@
 #define AMZN_SEARCH_NODE_NAME "div"
 #define AMZN_SEARCH_PROPERTIES_NAME "data-index"
 #define AMZN_SEARCH_PROPERTIES_CONTENT "0"
+
+// <li class="price-current ">  ->children->next should give <strong>dollar</strong>
+// and ->children->next->next should give <sup>cents</sup>
+// Newegg doesn't give the full price as a single string
+#define EGGZ_PRICE_NODE_NAME "li"
+#define EGGZ_PRICE_PROPERTIES_NAME "class"
+#define EGGZ_PRICE_PROPERTIES_CONTENT "price-current"
+
+// <div class="list wrap"> --> <div class="item-cells-wrap border-cells..."> --> <div class="item-cell"
+// This is how Newegg lists out their search result items
 
 //TODO::implement for multiple websites
 void save_content(xmlNode *html_tree_node, std::string &content);
