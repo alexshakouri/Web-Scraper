@@ -38,23 +38,24 @@ int main(int argc, char *argv[]){
     url_names.push_back(bestbuy_url);
     url_names.push_back(newegg_url);
 
-    std::vector<Html_Setup> scraper_init;
+    std::vector< std::unique_ptr<Html_Setup> > scraper_init;
     int curl_init_result = 0;
     std::string price;
     bool found_price = false;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
-        scraper_init.push_back( Html_Setup(url_names[i]) );
+        std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[i]));
+        scraper_init.push_back(std::move(new_url));
 
-        curl_init_result = scraper_init[i].curl_setup();
+        curl_init_result = scraper_init[i]->curl_setup();
         if (curl_init_result == -1) {
             return -1;
         }
 
-        scraper_init[i].xml_setup();
+        scraper_init[i]->xml_setup();
 
         found_price = false;
-        find_content(scraper_init[i].get_root_element(), price, found_price);
+        find_content(scraper_init[i]->get_root_element(), price, found_price);
         if(found_price == false){
             std::cout << "No Price Found" << std::endl;
         }

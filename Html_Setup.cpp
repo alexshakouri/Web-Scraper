@@ -9,7 +9,7 @@ Html_Setup::Html_Setup(std::string url_name)
 }
 
 Html_Setup::~Html_Setup() {
-	//xml_cleanup();
+    xml_cleanup();
 }
 
 //Need this prototype to use with CURL_WRITEFUNCTION
@@ -93,8 +93,8 @@ void Html_Setup::xml_setup() {
 }
 
 void Html_Setup::xml_cleanup() {
-    if (html_tree != NULL) {
-        xmlFreeDoc(html_tree);
+    if (this->html_tree != NULL) {
+        xmlFreeDoc(this->html_tree);
         xmlCleanupParser();
     }
 }
