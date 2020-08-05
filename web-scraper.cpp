@@ -33,16 +33,11 @@ int main(int argc, char *argv[]){
     std::vector<std::string> url_names;
     //TODO::amazon bot detector gives the wrong HTML possible fix is to change the header
     std::string amazon_url = "https://www.amazon.com/s?k=";
-    //TODO::bestbuy URL curl output giving 403
-    //possibly bestbuy doesn't allow webscraping
-    std::string bestbuy_url = "https://www.bestbuy.com/site/searchpage.jsp?st=";
     std::string newegg_url = "https://www.newegg.com/p/pl?d=";
 
     amazon_url.append(user_input);
-    bestbuy_url.append(user_input);
     newegg_url.append(user_input);
     url_names.push_back(amazon_url);
-    url_names.push_back(bestbuy_url);
     url_names.push_back(newegg_url);
 
     std::vector< std::unique_ptr<Html_Setup> > scraper_init;
