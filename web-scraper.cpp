@@ -42,7 +42,6 @@ int main(int argc, char *argv[]){
     }
 
     std::vector<std::string> url_names;
-    //TODO::amazon bot detector gives the wrong HTML possible fix is to change the header
     std::string amazon_url = "https://www.amazon.com/s?k=";
     std::string newegg_url = "https://www.newegg.com/p/pl?d=";
 
