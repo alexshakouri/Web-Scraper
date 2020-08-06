@@ -111,10 +111,9 @@ bool search_html_properties(xmlAttr *html_properties_node, const char *propertie
     xmlAttr *search_html_node = html_properties_node;    
 
     while(search_html_node != NULL){
-        if(strcmp(reinterpret_cast<const char*>(search_html_node->name), properties_name) == 0){
-            if(strcmp(reinterpret_cast<const char*>(search_html_node->children->content), properties_content) == 0){
-                return true;
-            }
+        if(strcmp(reinterpret_cast<const char*>(search_html_node->name), properties_name) == 0
+                && strcmp(reinterpret_cast<const char*>(search_html_node->children->content), properties_content) == 0){
+            return true;
         }
         search_html_node = search_html_node->next;
     }
@@ -127,12 +126,9 @@ void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool 
         return;
     }
 
-    //int node_name_match = strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME);
-    //bool has_item = search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT);
-
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
-       && strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME) == 0
-       && search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT)){
+            && strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME) == 0
+            && search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT)){
         found_results = true;
         search_result = html_tree_node;
     }
@@ -149,13 +145,11 @@ void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool 
         return;
     }   
 
-    if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
-        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0){
-            if(search_html_properties(html_tree_node->properties, properties_name, properties_content)){
-                found_content = true;
-                save_content(html_tree_node->children, item_content);
-            }
-        }
+    if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
+            && strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0
+            && search_html_properties(html_tree_node->properties, properties_name, properties_content)){
+        found_content = true;
+        save_content(html_tree_node->children, item_content);
     }
 
     find_item_content(html_tree_node->next, item_content, found_content, node_name, properties_name, properties_content);
