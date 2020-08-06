@@ -33,24 +33,22 @@ int main(int argc, char *argv[]){
     std::vector<std::string> url_names;
     //TODO::amazon bot detector gives the wrong HTML possible fix is to change the header
     std::string amazon_url = "https://www.amazon.com/s?k=";
-    //TODO::bestbuy URL curl output giving 403
-    //possibly bestbuy doesn't allow webscraping
-    std::string bestbuy_url = "https://www.bestbuy.com/site/searchpage.jsp?st=";
     std::string newegg_url = "https://www.newegg.com/p/pl?d=";
 
     amazon_url.append(user_input);
-    bestbuy_url.append(user_input);
     newegg_url.append(user_input);
     url_names.push_back(amazon_url);
-    url_names.push_back(bestbuy_url);
     url_names.push_back(newegg_url);
 
     std::vector<Html_Setup> scraper_init;
-    int curl_init_result = 0;
-    std::string price;
-    xmlNode *AMZN_results = NULL;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
+        int curl_init_result = 0;
+        bool found_price = false;
+        bool found_results = false;
+        std::string price = "";
+        xmlNode *AMZN_results = NULL;
+
         scraper_init.push_back(Html_Setup(url_names[i]));
 
         curl_init_result = scraper_init[i].curl_setup();
@@ -59,9 +57,6 @@ int main(int argc, char *argv[]){
         }
 
         scraper_init[i].xml_setup();
-
-        bool found_price = false;
-        bool found_results = false;
 
         //TODO::output multiple results from the search
         find_search_results(scraper_init[i].get_root_element(), AMZN_results, found_results);

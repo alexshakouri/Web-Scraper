@@ -50,6 +50,13 @@ CURLcode Html_Setup::curl_initialization(CURL *curl_connection){
         return setup_output;
     }
 
+    //Set the user agent to get around bot detectors
+    setup_output = curl_easy_setopt(curl_connection, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36");
+    if(setup_output != CURLE_OK){
+        std::cerr << "Failed to set user agent" << std::endl;
+        return setup_output;
+    }    
+
     return setup_output;
 }
 
