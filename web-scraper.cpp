@@ -31,7 +31,7 @@ std::string spaces_to_underscores(std::string user_input);
 
 //TODO::include user input with error checks
 int main(int argc, char *argv[]){
-	std::string user_input = "";
+    std::string user_input = "";
     if(argc == 1){
         user_input = "xbox";
         std::cerr << "Defaulting search to '" << user_input << "'." << std::endl;
@@ -113,16 +113,16 @@ bool search_html_properties(xmlAttr *html_properties_node, const char *propertie
 void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results){
     if(html_tree_node == NULL || found_results){
         return;
-    }   
+    }
 
-    if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
-        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME) == 0){
-            if(search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT)){
-                found_results = true;
-                search_result = html_tree_node;
+    //int node_name_match = strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME);
+    //bool has_item = search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT);
 
-            }
-        }
+    if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
+       && strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME) == 0
+       && search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT)){
+        found_results = true;
+        search_result = html_tree_node;
     }
 
     find_search_results(html_tree_node->next, search_result, found_results);

@@ -12,7 +12,7 @@ private:
     std::string url_name;
     std::string html_buffer;
     htmlDocPtr html_tree;
-    xmlNode * root_element;
+    xmlNode *root_element;
 
     static int curl_write(char* data, size_t size, size_t nmemb, std::string *write_data);
     CURLcode curl_initialization(CURL *curl_connection);
