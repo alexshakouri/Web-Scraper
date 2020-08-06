@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <string.h>
 
+//TODO::move global variables to its own file
 //TODO::determine values for other websites (e.g. newegg.com)
 #define AMZN_PRICE_NODE_NAME "span"
 #define AMZN_PRICE_PROPERTIES_NAME "class"
@@ -10,6 +11,16 @@
 #define AMZN_SEARCH_NODE_NAME "div"
 #define AMZN_SEARCH_PROPERTIES_NAME "data-index"
 #define AMZN_SEARCH_PROPERTIES_CONTENT "0"
+
+// <li class="price-current ">  ->children->next should give <strong>dollar</strong>
+// and ->children->next->next should give <sup>cents</sup>
+// Newegg doesn't give the full price as a single string
+#define EGGZ_PRICE_NODE_NAME "li"
+#define EGGZ_PRICE_PROPERTIES_NAME "class"
+#define EGGZ_PRICE_PROPERTIES_CONTENT "price-current"
+
+// <div class="list wrap"> --> <div class="item-cells-wrap border-cells..."> --> <div class="item-cell"
+// This is how Newegg lists out their search result items
 
 //TODO::implement for multiple websites
 void save_content(xmlNode *html_tree_node, std::string &content);
@@ -22,8 +33,8 @@ std::string spaces_to_underscores(std::string user_input);
 int main(int argc, char *argv[]){
 	std::string user_input = "";
     if(argc == 1){
-        std::cerr << "Defaulting search to 'switch'." << std::endl;
         user_input = "xbox";
+        std::cerr << "Defaulting search to '" << user_input << "'." << std::endl;
     }
     else{
         user_input = spaces_to_underscores(argv[1]);
@@ -50,21 +61,21 @@ int main(int argc, char *argv[]){
         xmlNode *AMZN_results = NULL;
 
         scraper_init.push_back(Html_Setup(url_names[i]));
-
-        curl_init_result = scraper_init[i].curl_setup();
+        curl_init_result = scraper_init[i]->curl_setup();
         if (curl_init_result == -1) {
             return -1;
         }
 
-        scraper_init[i].xml_setup();
+        scraper_init[i]->xml_setup();
 
         //TODO::output multiple results from the search
-        find_search_results(scraper_init[i].get_root_element(), AMZN_results, found_results);
+        find_search_results(scraper_init[i]->get_root_element(), AMZN_results, found_results);
         if(AMZN_results == NULL){
             std::cout << "No search results found" << std::endl;
             return -1;
         }
         find_content(AMZN_results, price, found_price);
+
         if(found_price == false){
             std::cout << "No Price Found" << std::endl;
         }
