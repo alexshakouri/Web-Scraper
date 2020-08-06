@@ -6,12 +6,13 @@
 
 //TODO::move global variables to its own file
 //TODO::determine values for other websites (e.g. newegg.com)
+#define AMAZON 0
+#define NEWEGG 1
 
 //Find the first search result
 #define AMZN_SEARCH_NODE_NAME "div"
 #define AMZN_SEARCH_PROPERTIES_NAME "data-index"
 #define AMZN_SEARCH_PROPERTIES_CONTENT "0"
-
 
 //Find the price of the item
 #define AMZN_PRICE_NODE_NAME "span"
@@ -26,6 +27,10 @@
 // <li class="price-current ">  ->children->next should give <strong>dollar</strong>
 // and ->children->next->next should give <sup>cents</sup>
 // Newegg doesn't give the full price as a single string
+#define EGGZ_SEARCH_NODE_NAME "div"
+#define EGGZ_SEARCH_PROPERTIES_NAME "class"
+#define EGGZ_SEARCH_PROPERTIES_CONTENT "item-cell"
+
 #define EGGZ_PRICE_NODE_NAME "li"
 #define EGGZ_PRICE_PROPERTIES_NAME "class"
 #define EGGZ_PRICE_PROPERTIES_CONTENT "price-current"
@@ -37,7 +42,7 @@
 void save_content(xmlNode *html_tree_node, std::string &content);
 bool search_html_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content);
 void find_item_content(xmlNode *html_tree_node, std::string &item_price, bool &found_price, const char *node_name, const char *properties_name, const char *properties_content);
-void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results);
+void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results, const char *node_name, const char *properties_name, const char *properties_content);
 std::string spaces_to_underscores(std::string user_input);
 
 //TODO::include user input with error checks
@@ -67,14 +72,57 @@ int main(int argc, char *argv[]){
     bool found_results = false;
     std::string item_price = "";
     std::string item_name = "";
-    xmlNode *AMZN_results = NULL;
+    xmlNode *search_results = NULL;
+
+    std::string search_node_name = "";
+    std::string search_properties_name = "";
+    std::string search_properties_content = "";
+
+    std::string price_node_name = "";
+    std::string price_properties_name = "";
+    std::string price_properties_content = "";
+
+    std::string name_node_name = "";
+    std::string name_properties_name = "";
+    std::string name_properties_content = "";
 
     for(unsigned int i = 0; i < url_names.size(); i++){
         curl_init_result = 0;
         found_price = false;
         found_results = false;
         item_price = "";
-        AMZN_results = NULL;
+        search_results = NULL;
+
+        switch(i){
+            case AMAZON:
+                search_node_name = AMZN_SEARCH_NODE_NAME;
+                search_properties_name = AMZN_SEARCH_PROPERTIES_NAME;
+                search_properties_content = AMZN_SEARCH_PROPERTIES_CONTENT;
+
+                price_node_name = AMZN_PRICE_NODE_NAME;
+                price_properties_name = AMZN_PRICE_PROPERTIES_NAME;
+                price_properties_content = AMZN_PRICE_PROPERTIES_CONTENT;
+
+                name_node_name = AMZN_NAME_NODE_NAME;
+                name_properties_name = AMZN_NAME_PROPERTIES_NAME;
+                name_properties_content = AMZN_NAME_PROPERTIES_CONTENT;
+                break;
+            case NEWEGG:
+                search_node_name = EGGZ_SEARCH_NODE_NAME;
+                search_properties_name = EGGZ_SEARCH_PROPERTIES_NAME;
+                search_properties_content = EGGZ_SEARCH_PROPERTIES_CONTENT;
+
+                price_node_name = EGGZ_PRICE_NODE_NAME;
+                price_properties_name = EGGZ_PRICE_PROPERTIES_NAME;
+                price_properties_content = EGGZ_PRICE_PROPERTIES_CONTENT;
+
+                //name_node_name = EGGZ_NAME_NODE_NAME;
+                //name_properties_name = EGGZ_NAME_PROPERTIES_NAME;
+                //name_properties_content = EGGZ_NAME_PROPERTIES_CONTENT;
+                break;
+            default:
+                break;
+        }
 
         std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[i]));
         scraper_init.push_back(std::move(new_url));
@@ -86,13 +134,13 @@ int main(int argc, char *argv[]){
         scraper_init[i]->xml_setup();
 
         //TODO::output multiple results from the search
-        find_search_results(scraper_init[i]->get_root_element(), AMZN_results, found_results);
-        if(AMZN_results == NULL){
+        find_search_results(scraper_init[i]->get_root_element(), search_results, found_results, search_node_name.c_str(), search_properties_name.c_str(), search_properties_content.c_str());
+        if(search_results == NULL){
             std::cout << "No search results found" << std::endl;
             return -1;
         }
         
-        find_item_content(AMZN_results, item_price, found_price, AMZN_PRICE_NODE_NAME, AMZN_PRICE_PROPERTIES_NAME, AMZN_PRICE_PROPERTIES_CONTENT);
+        find_item_content(search_results, item_price, found_price, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
 
         if(found_price == false){
             std::cout << "No Price Found" << std::endl;
@@ -121,20 +169,20 @@ bool search_html_properties(xmlAttr *html_properties_node, const char *propertie
 }
 
 //Returns the first search result in the amazon list in order to move to the next item go ->next->next (or find the next div)
-void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results){
+void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results, const char *node_name, const char *properties_name, const char *properties_content){
     if(html_tree_node == NULL || found_results){
         return;
     }
 
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
-            && strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_SEARCH_NODE_NAME) == 0
-            && search_html_properties(html_tree_node->properties, AMZN_SEARCH_PROPERTIES_NAME, AMZN_SEARCH_PROPERTIES_CONTENT)){
+            && strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0
+            && search_html_properties(html_tree_node->properties, properties_name, properties_content)){
         found_results = true;
         search_result = html_tree_node;
     }
 
-    find_search_results(html_tree_node->next, search_result, found_results);
-    find_search_results(html_tree_node->children, search_result, found_results);
+    find_search_results(html_tree_node->next, search_result, found_results, node_name, properties_name, properties_content);
+    find_search_results(html_tree_node->children, search_result, found_results, node_name, properties_name, properties_content);
 }
 
 
