@@ -5,7 +5,6 @@
 #include <string>
 #include <curl/curl.h>
 #include <libxml/HTMLparser.h>
-#include <vector>
 
 class Html_Setup {
 private:

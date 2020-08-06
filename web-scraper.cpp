@@ -1,16 +1,27 @@
 #include "Html_Setup.h"
 #include <algorithm>
 #include <string.h>
+#include <vector>
+#include <memory>
 
 //TODO::move global variables to its own file
 //TODO::determine values for other websites (e.g. newegg.com)
+
+//Find the first search result
+#define AMZN_SEARCH_NODE_NAME "div"
+#define AMZN_SEARCH_PROPERTIES_NAME "data-index"
+#define AMZN_SEARCH_PROPERTIES_CONTENT "0"
+
+
+//Find the price of the item
 #define AMZN_PRICE_NODE_NAME "span"
 #define AMZN_PRICE_PROPERTIES_NAME "class"
 #define AMZN_PRICE_PROPERTIES_CONTENT "a-offscreen"
 
-#define AMZN_SEARCH_NODE_NAME "div"
-#define AMZN_SEARCH_PROPERTIES_NAME "data-index"
-#define AMZN_SEARCH_PROPERTIES_CONTENT "0"
+//Find the name of the item
+#define AMZN_NAME_NODE_NAME "span"
+#define AMZN_NAME_PROPERTIES_NAME "class"
+#define AMZN_NAME_PROPERTIES_CONTENT "a-size-medium a-color-base a-text-normal"
 
 // <li class="price-current ">  ->children->next should give <strong>dollar</strong>
 // and ->children->next->next should give <sup>cents</sup>
@@ -25,7 +36,7 @@
 //TODO::implement for multiple websites
 void save_content(xmlNode *html_tree_node, std::string &content);
 bool search_html_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content);
-void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price);
+void find_item_content(xmlNode *html_tree_node, std::string &item_price, bool &found_price, const char *node_name, const char *properties_name, const char *properties_content);
 void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results);
 std::string spaces_to_underscores(std::string user_input);
 
@@ -42,7 +53,6 @@ int main(int argc, char *argv[]){
     }
 
     std::vector<std::string> url_names;
-    //TODO::amazon bot detector gives the wrong HTML possible fix is to change the header
     std::string amazon_url = "https://www.amazon.com/s?k=";
     std::string newegg_url = "https://www.newegg.com/p/pl?d=";
 
@@ -55,14 +65,15 @@ int main(int argc, char *argv[]){
     int curl_init_result = 0;
     bool found_price = false;
     bool found_results = false;
-    std::string price = "";
+    std::string item_price = "";
+    std::string item_name = "";
     xmlNode *AMZN_results = NULL;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
         curl_init_result = 0;
         found_price = false;
         found_results = false;
-        price = "";
+        item_price = "";
         AMZN_results = NULL;
 
         std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[i]));
@@ -80,13 +91,14 @@ int main(int argc, char *argv[]){
             std::cout << "No search results found" << std::endl;
             return -1;
         }
-        find_content(AMZN_results, price, found_price);
+        
+        find_item_content(AMZN_results, item_price, found_price, AMZN_PRICE_NODE_NAME, AMZN_PRICE_PROPERTIES_NAME, AMZN_PRICE_PROPERTIES_CONTENT);
 
         if(found_price == false){
             std::cout << "No Price Found" << std::endl;
         }
         else{
-            std::cout << "price: " << price << std::endl;
+            std::cout << "price: " << item_price << std::endl;
         }
     }
 
@@ -131,26 +143,23 @@ void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool 
 
 
 //TODO::Adapt this function for multi-use for finding specific html tags
-void find_content(xmlNode *html_tree_node, std::string &price, bool &found_price){
+void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool &found_content, const char *node_name, const char *properties_name, const char *properties_content){
     //In order to find the price I need to not only search through the children and next but properties node as well
-    if(html_tree_node == NULL || found_price){
+    if(html_tree_node == NULL || found_content){
         return;
     }   
 
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
-        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), AMZN_PRICE_NODE_NAME) == 0){
-            //TODO::implement search_html_tree_properties functions here
-            if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->name), AMZN_PRICE_PROPERTIES_NAME) == 0){
-                if(strcmp(reinterpret_cast<const char*>(html_tree_node->properties->children->content), AMZN_PRICE_PROPERTIES_CONTENT) == 0){
-                    found_price = true;
-                    save_content(html_tree_node->children, price);
-                }
+        if(strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0){
+            if(search_html_properties(html_tree_node->properties, properties_name, properties_content)){
+                found_content = true;
+                save_content(html_tree_node->children, item_content);
             }
         }
     }
 
-    find_content(html_tree_node->next, price, found_price);
-    find_content(html_tree_node->children, price, found_price);
+    find_item_content(html_tree_node->next, item_content, found_content, node_name, properties_name, properties_content);
+    find_item_content(html_tree_node->children, item_content, found_content, node_name, properties_name, properties_content);
 }
 
 void save_content(xmlNode *html_tree_node, std::string &content){
