@@ -51,16 +51,22 @@ int main(int argc, char *argv[]){
     url_names.push_back(amazon_url);
     url_names.push_back(newegg_url);
 
-    std::vector<Html_Setup> scraper_init;
+    std::vector< std::unique_ptr<Html_Setup> > scraper_init;
+    int curl_init_result = 0;
+    bool found_price = false;
+    bool found_results = false;
+    std::string price = "";
+    xmlNode *AMZN_results = NULL;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
-        int curl_init_result = 0;
-        bool found_price = false;
-        bool found_results = false;
-        std::string price = "";
-        xmlNode *AMZN_results = NULL;
+        curl_init_result = 0;
+        found_price = false;
+        found_results = false;
+        price = "";
+        AMZN_results = NULL;
 
-        scraper_init.push_back(Html_Setup(url_names[i]));
+        std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[i]));
+        scraper_init.push_back(std::move(new_url));
         curl_init_result = scraper_init[i]->curl_setup();
         if (curl_init_result == -1) {
             return -1;
