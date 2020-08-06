@@ -44,7 +44,7 @@ std::string spaces_to_underscores(std::string user_input);
 int main(int argc, char *argv[]){
 	std::string user_input = "";
     if(argc == 1){
-        user_input = "xbox";
+        user_input = "switch_games";
         std::cerr << "Defaulting search to '" << user_input << "'." << std::endl;
     }
     else{
@@ -63,18 +63,20 @@ int main(int argc, char *argv[]){
 
     std::vector< std::unique_ptr<Html_Setup> > scraper_init;
     int curl_init_result = 0;
-    bool found_price = false;
     bool found_results = false;
+    bool found_price = false;
+    bool found_name = false;
     std::string item_price = "";
     std::string item_name = "";
-    xmlNode *AMZN_results = NULL;
+    xmlNode *search_results = NULL;
 
     for(unsigned int i = 0; i < url_names.size(); i++){
         curl_init_result = 0;
-        found_price = false;
         found_results = false;
-        item_price = "";
-        AMZN_results = NULL;
+        search_results = NULL;
+
+        //output beginning of list
+        std::cout << "URL: " << url_names[i] << std::endl; 
 
         std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[i]));
         scraper_init.push_back(std::move(new_url));
@@ -86,19 +88,43 @@ int main(int argc, char *argv[]){
         scraper_init[i]->xml_setup();
 
         //TODO::output multiple results from the search
-        find_search_results(scraper_init[i]->get_root_element(), AMZN_results, found_results);
-        if(AMZN_results == NULL){
-            std::cout << "No search results found" << std::endl;
-            return -1;
-        }
+        find_search_results(scraper_init[i]->get_root_element(), search_results, found_results);
         
-        find_item_content(AMZN_results, item_price, found_price, AMZN_PRICE_NODE_NAME, AMZN_PRICE_PROPERTIES_NAME, AMZN_PRICE_PROPERTIES_CONTENT);
 
-        if(found_price == false){
-            std::cout << "No Price Found" << std::endl;
-        }
-        else{
-            std::cout << "price: " << item_price << std::endl;
+        for(int item_num = 0; item_num < 3; item_num++){
+            found_price = false;
+            found_name = false;
+            item_price = "";
+            item_name = "";
+      
+            if(search_results == NULL){
+                std::cout << "No search results found" << std::endl;
+                break;
+            }
+
+            //TODO:: only output the actual search results and not to promotional ones
+
+            std::cout << "Item " << item_num+1 << ": "<< std::endl;
+
+            find_item_content(search_results->children, item_name, found_name, AMZN_NAME_NODE_NAME, AMZN_NAME_PROPERTIES_NAME, AMZN_NAME_PROPERTIES_CONTENT);
+            if(found_name == false){
+                std::cout << "No Item Name Found" << std::endl;
+            } 
+            else{
+                std::cout << item_name << std::endl;
+            }
+
+            find_item_content(search_results->children, item_price, found_price, AMZN_PRICE_NODE_NAME, AMZN_PRICE_PROPERTIES_NAME, AMZN_PRICE_PROPERTIES_CONTENT);
+            if(found_price == false){
+                std::cout << "No Price Found" << std::endl;
+            }
+            else{
+                std::cout << item_price << std::endl;
+            }
+            std::cout << std::endl;
+
+            search_results = search_results->next->next;
+
         }
     }
 
@@ -142,7 +168,6 @@ void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool 
 }
 
 
-//TODO::Adapt this function for multi-use for finding specific html tags
 void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool &found_content, const char *node_name, const char *properties_name, const char *properties_content){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if(html_tree_node == NULL || found_content){
