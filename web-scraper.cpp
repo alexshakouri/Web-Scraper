@@ -140,8 +140,6 @@ int main(int argc, char *argv[]){
 
         scraper_init[url]->xml_setup();
 
-        //TODO::output multiple results from the search
-        
         find_search_results(scraper_init[url]->get_root_element(), search_results, found_results, search_node_name.c_str(), search_properties_name.c_str(), search_properties_content.c_str());
         if(search_results == NULL){
             std::cout << "No search results found" << std::endl;
