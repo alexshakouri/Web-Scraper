@@ -5,6 +5,7 @@
 #include <memory>
 
 //TODO::move global variables to its own file
+#define ITEMS_PER_WEBSITE 10
 //TODO::determine values for other websites (e.g. newegg.com)
 #define AMAZON 0
 #define NEWEGG 1
@@ -23,6 +24,11 @@
 #define AMZN_NAME_NODE_NAME "span"
 #define AMZN_NAME_PROPERTIES_NAME "class"
 #define AMZN_NAME_PROPERTIES_CONTENT "a-size-medium a-color-base a-text-normal"
+
+//Find if item is from the search result
+#define AMZN_PROMO_NODE_NAME "span"
+#define AMZN_PROMO_PROPERTIES_NAME "cel_widget_id"
+#define AMZN_PROMO_PROPERTIES_CONTENT "MAIN-SEARCH_RESULTS"
 
 
 #define EGGZ_SEARCH_NODE_NAME "div"
@@ -72,13 +78,14 @@ int main(int argc, char *argv[]){
     std::vector< std::unique_ptr<Html_Setup> > scraper_init;
     int curl_init_result = 0;
     bool found_results = false;
+    bool found_not_promotional = false;
     bool found_price = false;
     bool found_name = false;
     bool is_finding_price = false;
     std::string item_price = "";
     std::string item_name = "";
     xmlNode *search_results = NULL;
-    xmlNode *newegg_results = NULL;
+    xmlNode *search_results_not_promotional = NULL; //Variable current not in use
 
     std::string search_node_name = "";
     std::string search_properties_name = "";
@@ -96,7 +103,6 @@ int main(int argc, char *argv[]){
         curl_init_result = 0;
         found_results = false;
         search_results = NULL;
-        newegg_results = NULL;
 
         switch(url){
             case AMAZON:
@@ -145,22 +151,34 @@ int main(int argc, char *argv[]){
             std::cout << "No search results found" << std::endl;
             return -1;
         }
-       
+         
         std::cout << "URL: " << url_names[url] << std::endl;
 
-        for(int item_num = 0; item_num < 3; item_num++){
+        for(int item_num = 0; item_num < ITEMS_PER_WEBSITE; item_num++){
             found_price = false;
             found_name = false;
             item_price = "";
             item_name = "";
-      
+            found_not_promotional = false;
+            search_results_not_promotional = NULL;
+
+            
             if(search_results == NULL){
                 std::cout << "No search results found" << std::endl;
                 break;
             }
 
-            //TODO:: only output the actual search results and not to promotional ones
-
+            //only return main results for AMZN
+            if(url == AMAZON){
+                find_search_results(search_results, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
+                if(!found_not_promotional){
+                    std::cout << "Skipping promotional content" << std::endl;
+                    item_num--;
+                    search_results = search_results->next->next;
+                    continue;
+                }
+            }
+        
             std::cout << "Item " << item_num+1 << ": "<< std::endl;
 
             is_finding_price = false;
@@ -193,8 +211,6 @@ int main(int argc, char *argv[]){
 
     return 0;
 }
-
-//TODO::create function to return the title of the item being priced
 
 bool search_html_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content){
     xmlAttr *search_html_node = html_properties_node;    
