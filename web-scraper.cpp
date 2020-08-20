@@ -4,9 +4,14 @@
 #include <vector>
 #include <memory>
 
+//TODO::output value from each website sorted by (lowest price, rating, number of reviews)
+
+//TODO::output the item URL so that the user can go straight to the item
+
 //TODO::move global variables to its own file
-#define ITEMS_PER_WEBSITE 10
-//TODO::determine values for other websites (e.g. newegg.com)
+#define ITEMS_PER_WEBSITE 3
+
+//TODO::create a click function where we sort the output by featured
 #define AMAZON 0
 #define NEWEGG 1
 
@@ -30,7 +35,7 @@
 #define AMZN_PROMO_PROPERTIES_NAME "cel_widget_id"
 #define AMZN_PROMO_PROPERTIES_CONTENT "MAIN-SEARCH_RESULTS"
 
-
+//TODO::NEWEGG returns max 4 items atm, search for class="list_wrap"
 #define EGGZ_SEARCH_NODE_NAME "div"
 #define EGGZ_SEARCH_PROPERTIES_NAME "class"
 #define EGGZ_SEARCH_PROPERTIES_CONTENT "item-cells-wrap border-cells items-grid-view four-cells expulsion-one-cell"
@@ -39,22 +44,24 @@
 #define EGGZ_PRICE_PROPERTIES_NAME "class"
 #define EGGZ_PRICE_PROPERTIES_CONTENT "price-current-label"
 
-#define EGGZ_PRICE_STRONG "strong"
-#define EGGZ_PRICE_SUP "sup"
+#define EGGZ_PRICE_DOLLAR "strong"
+#define EGGZ_PRICE_CENT "sup"
 
 #define EGGZ_NAME_NODE_NAME "a"
 #define EGGZ_NAME_PROPERTIES_NAME "class"
 #define EGGZ_NAME_PROPERTIES_CONTENT "item-title"
 
 //TODO::implement for multiple websites
+//TODO::implement search functions as a class
+//TODO::have functions return bool found_content
 void save_content(xmlNode *html_tree_node, std::string &content, int url, bool is_finding_price);
-bool search_html_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content);
-void find_item_content(xmlNode *html_tree_node, std::string &item_price, bool &found_price, int url, bool is_finding_price, const char *node_name, const char *properties_name, const char *properties_content);
+bool search_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content);
+void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool &found_content, int url, bool is_finding_price, const char *node_name, const char *properties_name, const char *properties_content);
 void find_newegg_price(xmlNode *html_tree_node, std::string &item_price, bool &found_price, int url, bool is_finding_price,  const char *node_name/*, const char *properties_name, const char *properties_content*/);
 void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool &found_results, const char *node_name, const char *properties_name, const char *properties_content);
 std::string spaces_to_underscores(std::string user_input);
 
-//TODO::include user input with error checks
+//TODO::include user input with error checks (multiple arguements)
 int main(int argc, char *argv[]){
     std::string user_input = "";
     if(argc == 1){
@@ -201,6 +208,7 @@ int main(int argc, char *argv[]){
             }
             std::cout << std::endl;
 
+            //TODO::create function that returns next search result for different websites
             search_results = search_results->next->next;
 
         }
@@ -210,7 +218,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-bool search_html_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content){
+bool search_properties(xmlAttr *html_properties_node, const char *properties_name, const char *properties_content){
     xmlAttr *search_html_node = html_properties_node;    
 
     while(search_html_node != NULL){
@@ -231,7 +239,7 @@ void find_search_results(xmlNode *html_tree_node, xmlNode* &search_result, bool 
 
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
             && strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0
-            && search_html_properties(html_tree_node->properties, properties_name, properties_content)){
+            && search_properties(html_tree_node->properties, properties_name, properties_content)){
         found_results = true;
         search_result = html_tree_node;
     }
@@ -249,9 +257,9 @@ void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool 
 
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL
             && strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == 0
-            && search_html_properties(html_tree_node->properties, properties_name, properties_content)){
+            && search_properties(html_tree_node->properties, properties_name, properties_content)){
         if(is_finding_price && url == NEWEGG){
-            find_newegg_price(html_tree_node, item_content, found_content, url, is_finding_price, EGGZ_PRICE_STRONG);
+            find_newegg_price(html_tree_node, item_content, found_content, url, is_finding_price, EGGZ_PRICE_DOLLAR);
         }
         else{
             found_content = true;
@@ -288,14 +296,9 @@ void save_content(xmlNode *html_tree_node, std::string &content, int url, bool i
     
     if(html_tree_node->children->type == XML_CDATA_SECTION_NODE || html_tree_node->children->type == XML_TEXT_NODE){
         //TODO::Find way to save content here even if it contains '/n' (std::string s( reinterpret_cast<char const*>(uc), len)
-        if(url == NEWEGG){
-            if(is_finding_price){
-                content = content + '$' + reinterpret_cast<char*>(html_tree_node->children->content);
-                content += reinterpret_cast<char*>(html_tree_node->next->children->content);
-            }
-            else{
-                content = reinterpret_cast<char*>(html_tree_node->children->content);
-            }
+        if(url == NEWEGG && is_finding_price){
+            content = content + '$' + reinterpret_cast<char*>(html_tree_node->children->content);
+            content += reinterpret_cast<char*>(html_tree_node->next->children->content);
         }
         else{
             // Amazon: finding item name and item price don't require any additional manipulation
