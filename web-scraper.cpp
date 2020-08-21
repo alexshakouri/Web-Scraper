@@ -263,13 +263,7 @@ void find_item_content(xmlNode *html_tree_node, std::string &item_content, bool 
         }
         else{
             found_content = true;
-
-            if(url == NEWEGG){
-                save_content(html_tree_node, item_content, url, is_finding_price);
-            }
-            else{
-                save_content(html_tree_node, item_content, url, is_finding_price);
-            }
+            save_content(html_tree_node, item_content, url, is_finding_price);
         }
     }
 
