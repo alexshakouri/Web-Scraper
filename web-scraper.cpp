@@ -23,6 +23,13 @@ int main(int argc, char *argv[]){
         user_input = "switch_games";
         std::cerr << "Defaulting search to '" << user_input << "'." << std::endl;
     }
+    else if (argc > 2){
+        for (int i = 1; i < argc; i++) {
+            user_input = user_input + argv[i] + "_";
+        }
+        user_input.pop_back();
+        std::cout << "User Input: " << user_input << std::endl;
+    }
     else{
         user_input = spaces_to_underscores(argv[1]);
         std::cout << "User Input: " << user_input << std::endl;
