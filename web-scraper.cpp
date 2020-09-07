@@ -9,7 +9,7 @@
 //TODO::output the item URL so that the user can go straight to the item
 
 //TODO::move global variables to its own file
-#define ITEMS_PER_WEBSITE 3
+#define ITEMS_PER_WEBSITE 10
 
 //TODO::implement for multiple websites
 //TODO::implement search functions as a class
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
 
     Html_Parse parse_websites;
 
-    for(unsigned int url = 0; url < url_names.size(); url++){
+    for(unsigned int url = 0; url < url_names.size()-1; url++){
         curl_init_result = 0;
         found_results = false;
         search_results = NULL;
@@ -173,7 +173,13 @@ int main(int argc, char *argv[]){
             std::cout << std::endl;
 
             //TODO::create function that returns next search result for different websites
-            search_results = search_results->next->next;
+            if (url == AMAZON) {
+                search_results = search_results->next->next;
+            }
+            else if (url == NEWEGG) {
+                search_results = search_results->next;
+            }
+
 
         }
         std::cout << "-----" << std::endl;
