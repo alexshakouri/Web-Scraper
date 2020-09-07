@@ -99,10 +99,10 @@ void Html_Setup::xml_setup() {
     this->root_element = xmlDocGetRootElement(this->html_tree);
 
     //debug
-    std::cout << "Debug" << std::endl;
+    /*std::cout << "Debug" << std::endl;
     xmlBufferPtr buffer = xmlBufferCreate();
     int size = xmlNodeDump(buffer, this->html_tree, this->root_element, 0, 1);
-    std::cout << buffer->content << std::endl;
+    std::cout << buffer->content << std::endl;*/
 }
 
 void Html_Setup::xml_cleanup() {

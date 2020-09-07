@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
 
     Html_Parse parse_websites;
 
-    for(unsigned int url = 0; url < url_names.size()-1; url++){
+    for(unsigned int url = 0; url < url_names.size(); url++){
         curl_init_result = 0;
         found_results = false;
         search_results = NULL;
