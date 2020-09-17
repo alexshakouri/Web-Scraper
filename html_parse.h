@@ -5,7 +5,9 @@
 #include <string>
 #include <string.h>
 #include <libxml/HTMLparser.h>
-#include "globals.h"
+#include "website_globals.h"
+
+#define MATCHING 0
 
 //TODO::create a click function where we sort the output by featured
 
