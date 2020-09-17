@@ -30,6 +30,20 @@ void Html_Parse::save_content(xmlNodePtr html_tree_node, std::string &content, i
     }
 }
 
+void Html_Parse::save_properties_content(xmlAttrPtr html_tree_node_properties, std::string &content, int url){    
+    if(url == AMAZON){
+        content += "https://www.amazon.com";
+    }
+    
+    while(html_tree_node_properties != NULL){
+        if(strcmp(reinterpret_cast<const char*>(html_tree_node_properties->name), "href") == MATCHING){
+            content += reinterpret_cast<char*>(html_tree_node_properties->children->content);
+            break;
+        }
+        html_tree_node_properties = html_tree_node_properties->next;
+    } 
+}
+
 void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_price, bool &found_price, int url, bool is_finding_price){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if(html_tree_node == NULL || found_price){
@@ -64,7 +78,8 @@ void Html_Parse::find_search_results(xmlNodePtr html_tree_node, xmlNodePtr &sear
     find_search_results(html_tree_node->children, search_result, found_results, node_name, properties_name, properties_content);
 }
 
-void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_content, bool &found_content, int url, bool is_finding_price, const char *node_name, const char *properties_name, const char *properties_content){
+//TODO::create enum for is_finding*
+void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_content, bool &found_content, int url, bool is_finding_price, bool is_finding_url, const char *node_name, const char *properties_name, const char *properties_content){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if((html_tree_node == NULL) || found_content){
         return;
@@ -73,7 +88,11 @@ void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
         if((strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == MATCHING)
                 && search_properties(html_tree_node->properties, properties_name, properties_content)){
-            if(is_finding_price && (url == NEWEGG)){
+            if(is_finding_url){
+                found_content = true;
+                save_properties_content(html_tree_node->properties, item_content, url);
+            }
+            else if(is_finding_price && (url == NEWEGG)){
                 find_newegg_price(html_tree_node, item_content, found_content, url, is_finding_price);
             }
             else{
@@ -83,7 +102,7 @@ void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_
         }
     }
 
-    find_item_content(html_tree_node->next, item_content, found_content, url, is_finding_price, node_name, properties_name, properties_content);
-    find_item_content(html_tree_node->children, item_content, found_content, url, is_finding_price, node_name, properties_name, properties_content);
+    find_item_content(html_tree_node->next, item_content, found_content, url, is_finding_price, is_finding_url, node_name, properties_name, properties_content);
+    find_item_content(html_tree_node->children, item_content, found_content, url, is_finding_price, is_finding_url, node_name, properties_name, properties_content);
 }
 

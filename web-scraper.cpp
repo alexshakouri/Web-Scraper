@@ -9,7 +9,7 @@
 //TODO::output the item URL so that the user can go straight to the item
 
 //TODO::move global variables to its own file
-#define ITEMS_PER_WEBSITE 10
+#define ITEMS_PER_WEBSITE 3
 
 //TODO::implement for multiple websites
 //TODO::implement search functions as a class
@@ -50,9 +50,12 @@ int main(int argc, char *argv[]){
     bool found_not_promotional = false;
     bool found_price = false;
     bool found_name = false;
+    bool found_url = false;
     bool is_finding_price = false;
+    bool is_finding_url = false;
     std::string item_price = "";
     std::string item_name = "";
+    std::string item_url = "";
     xmlNode *search_results = NULL;
     xmlNode *search_results_not_promotional = NULL; //Variable current not in use
 
@@ -67,6 +70,10 @@ int main(int argc, char *argv[]){
     std::string name_node_name = "";
     std::string name_properties_name = "";
     std::string name_properties_content = "";
+
+    std::string url_node_name = "";
+    std::string url_properties_name = "";
+    std::string url_properties_content = "";
 
     Html_Parse parse_websites;
 
@@ -88,6 +95,11 @@ int main(int argc, char *argv[]){
                 name_node_name = AMZN_NAME_NODE_NAME;
                 name_properties_name = AMZN_NAME_PROPERTIES_NAME;
                 name_properties_content = AMZN_NAME_PROPERTIES_CONTENT;
+
+                url_node_name = AMZN_URL_NODE_NAME;
+                url_properties_name = AMZN_URL_PROPERTIES_NAME;
+                url_properties_content = AMZN_URL_PROPERTIES_CONTENT;
+
                 break;
             case NEWEGG:
                 search_node_name = EGGZ_SEARCH_NODE_NAME;
@@ -101,6 +113,12 @@ int main(int argc, char *argv[]){
                 name_node_name = EGGZ_NAME_NODE_NAME;
                 name_properties_name = EGGZ_NAME_PROPERTIES_NAME;
                 name_properties_content = EGGZ_NAME_PROPERTIES_CONTENT;
+                
+                url_node_name = EGGZ_URL_NODE_NAME;
+                url_properties_name = EGGZ_URL_PROPERTIES_NAME;
+                url_properties_content = EGGZ_URL_PROPERTIES_CONTENT;
+
+
                 break;
             default:
                 break;
@@ -126,8 +144,10 @@ int main(int argc, char *argv[]){
         for(int item_num = 0; item_num < ITEMS_PER_WEBSITE; item_num++){
             found_price = false;
             found_name = false;
+            found_url = false;
             item_price = "";
             item_name = "";
+            item_url = "";
             found_not_promotional = false;
             search_results_not_promotional = NULL;
 
@@ -151,7 +171,7 @@ int main(int argc, char *argv[]){
             std::cout << "Item " << item_num+1 << ": "<< std::endl;
 
             is_finding_price = false;
-            parse_websites.find_item_content(search_results->children, item_name, found_name, url, is_finding_price, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
+            parse_websites.find_item_content(search_results->children, item_name, found_name, url, is_finding_price, is_finding_url, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
             
             if(found_name == false){
                 std::cout << "No Item Name Found" << std::endl;
@@ -161,8 +181,7 @@ int main(int argc, char *argv[]){
             }
 
             is_finding_price = true;
-            parse_websites.find_item_content(search_results->children, item_price, found_price, url, is_finding_price, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
-
+            parse_websites.find_item_content(search_results->children, item_price, found_price, url, is_finding_price, is_finding_url, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
 
             if(found_price == false){
                 std::cout << "No Price Found" << std::endl;
@@ -170,7 +189,19 @@ int main(int argc, char *argv[]){
             else{
                 std::cout << item_price << std::endl;
             }
-            std::cout << std::endl;
+            
+            is_finding_price = false;
+            is_finding_url = true;
+            parse_websites.find_item_content(search_results->children, item_url, found_url, url, is_finding_price, is_finding_url, url_node_name.c_str(), url_properties_name.c_str(), url_properties_content.c_str());
+            is_finding_url = false;            
+        
+            if(found_url == false){
+                std::cout << "No URL Found" << std::endl;
+            }
+            else{
+                std::cout << item_url << std::endl;
+            }
+
 
             //TODO::create function that returns next search result for different websites
             if (url == AMAZON) {
@@ -179,7 +210,8 @@ int main(int argc, char *argv[]){
             else if (url == NEWEGG) {
                 search_results = search_results->next;
             }
-
+            
+            std::cout << std::endl;
 
         }
         std::cout << "-----" << std::endl;

@@ -26,6 +26,11 @@
 #define AMZN_PROMO_PROPERTIES_NAME "cel_widget_id"
 #define AMZN_PROMO_PROPERTIES_CONTENT "MAIN-SEARCH_RESULTS"
 
+//Find url for the item
+#define AMZN_URL_NODE_NAME "a"
+#define AMZN_URL_PROPERTIES_NAME "class"
+#define AMZN_URL_PROPERTIES_CONTENT "a-link-normal a-text-normal"
+
 //TODO::NEWEGG returns max 4 items atm, search for class="list_wrap"
 #define EGGZ_SEARCH_NODE_NAME "div"
 #define EGGZ_SEARCH_PROPERTIES_NAME "class"
@@ -41,5 +46,10 @@
 #define EGGZ_NAME_NODE_NAME "a"
 #define EGGZ_NAME_PROPERTIES_NAME "class"
 #define EGGZ_NAME_PROPERTIES_CONTENT "item-title"
+
+#define EGGZ_URL_NODE_NAME "a"
+#define EGGZ_URL_PROPERTIES_NAME "class"
+#define EGGZ_URL_PROPERTIES_CONTENT "item-title"
+
 
 #endif //GLOBALS_H
