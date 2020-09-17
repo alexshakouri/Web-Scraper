@@ -1,7 +1,5 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
-
-#define MATCHING 0
+#ifndef WEBSITE_GLOBALS_H
+#define WEBSITE_GLOBALS_H
 
 #define AMAZON 0
 #define NEWEGG 1
@@ -51,5 +49,4 @@
 #define EGGZ_URL_PROPERTIES_NAME "class"
 #define EGGZ_URL_PROPERTIES_CONTENT "item-title"
 
-
-#endif //GLOBALS_H
+#endif //WEBSITE_GLOBALS_H

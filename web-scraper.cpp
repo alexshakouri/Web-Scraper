@@ -1,5 +1,5 @@
-#include "Html_Setup.h"
-#include "Html_Parse.h"
+#include "html_setup.h"
+#include "html_parse.h"
 #include <algorithm>
 #include <vector>
 #include <memory>
@@ -8,7 +8,6 @@
 
 //TODO::output the item URL so that the user can go straight to the item
 
-//TODO::move global variables to its own file
 #define ITEMS_PER_WEBSITE 3
 
 //TODO::implement for multiple websites
