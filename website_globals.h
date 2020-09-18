@@ -32,7 +32,7 @@
 //TODO::NEWEGG returns max 4 items atm, search for class="list_wrap"
 #define EGGZ_SEARCH_NODE_NAME "div"
 #define EGGZ_SEARCH_PROPERTIES_NAME "class"
-#define EGGZ_SEARCH_PROPERTIES_CONTENT "item-cell"
+#define EGGZ_SEARCH_PROPERTIES_CONTENT "item-cells-wrap border-cells items-grid-view four-cells expulsion-one-cell"
 
 #define EGGZ_PRICE_NODE_NAME "span"
 #define EGGZ_PRICE_PROPERTIES_NAME "class"

@@ -106,3 +106,164 @@ void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_
     find_item_content(html_tree_node->children, item_content, found_content, url, is_finding_price, is_finding_url, node_name, properties_name, properties_content);
 }
 
+std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int url) {
+    std::vector<item> items_list;
+    struct item item_mem;
+
+    xmlNode *search_results = NULL;
+    xmlNode *search_results_not_promotional = NULL;
+    bool is_finding_price = false;
+    bool is_finding_url = false;
+    bool found_results = false;
+    bool found_not_promotional = false;
+    bool found_name = false;
+    bool found_price = false;
+    bool found_url = false;
+    std::string item_price = "";
+    std::string item_name = "";
+    std::string item_url = "";
+
+    std::string search_node_name = "";
+    std::string search_properties_name = "";
+    std::string search_properties_content = "";
+
+    std::string price_node_name = "";
+    std::string price_properties_name = "";
+    std::string price_properties_content = "";
+
+    std::string name_node_name = "";
+    std::string name_properties_name = "";
+    std::string name_properties_content = "";
+
+    std::string url_node_name = "";
+    std::string url_properties_name = "";
+    std::string url_properties_content = "";
+
+    switch(url){
+        case AMAZON:
+            search_node_name = AMZN_SEARCH_NODE_NAME;
+            search_properties_name = AMZN_SEARCH_PROPERTIES_NAME;
+            search_properties_content = AMZN_SEARCH_PROPERTIES_CONTENT;
+
+            price_node_name = AMZN_PRICE_NODE_NAME;
+            price_properties_name = AMZN_PRICE_PROPERTIES_NAME;
+            price_properties_content = AMZN_PRICE_PROPERTIES_CONTENT;
+
+            name_node_name = AMZN_NAME_NODE_NAME;
+            name_properties_name = AMZN_NAME_PROPERTIES_NAME;
+            name_properties_content = AMZN_NAME_PROPERTIES_CONTENT;
+
+            url_node_name = AMZN_URL_NODE_NAME;
+            url_properties_name = AMZN_URL_PROPERTIES_NAME;
+            url_properties_content = AMZN_URL_PROPERTIES_CONTENT;
+
+            break;
+        case NEWEGG:
+            price_node_name = EGGZ_PRICE_NODE_NAME;
+            price_properties_name = EGGZ_PRICE_PROPERTIES_NAME;
+            price_properties_content = EGGZ_PRICE_PROPERTIES_CONTENT;
+
+            name_node_name = EGGZ_NAME_NODE_NAME;
+            name_properties_name = EGGZ_NAME_PROPERTIES_NAME;
+            name_properties_content = EGGZ_NAME_PROPERTIES_CONTENT;
+
+            url_node_name = EGGZ_URL_NODE_NAME;
+            url_properties_name = EGGZ_URL_PROPERTIES_NAME;
+            url_properties_content = EGGZ_URL_PROPERTIES_CONTENT;
+
+            search_node_name = EGGZ_SEARCH_NODE_NAME;
+            search_properties_name = EGGZ_SEARCH_PROPERTIES_NAME;
+            search_properties_content = EGGZ_SEARCH_PROPERTIES_CONTENT;
+
+            break;
+        default:
+            break;
+    }
+
+    //
+    //found_results = false;
+    //search_results = NULL;
+
+
+    find_search_results(scraper_init->get_root_element(), search_results, found_results, search_node_name.c_str(), search_properties_name.c_str(), search_properties_content.c_str());
+    if(search_results == NULL){
+        std::cout << "No search results found" << std::endl;
+        return items_list;
+    }
+    if(url == NEWEGG){
+        search_results = search_results->children;
+    }
+
+    for(int item_num = 0; item_num < ITEMS_PER_WEBSITE; item_num++){
+        found_price = false;
+        found_name = false;
+        found_url = false;
+        item_price = "";
+        item_name = "";
+        item_url = "";
+        found_not_promotional = false;
+        search_results_not_promotional = NULL;
+
+        if(search_results == NULL){
+            break;
+        }
+
+        //only return main results for AMZN
+        if(url == AMAZON){
+            find_search_results(search_results, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
+            if(!found_not_promotional){
+                std::cout << "Skipping promotional content" << std::endl;
+                item_num--;
+                search_results = search_results->next->next;
+                continue;
+            }
+        }
+
+        is_finding_price = false;
+        is_finding_url = false;
+        find_item_content(search_results->children, item_name, found_name, url, is_finding_price, is_finding_url, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
+
+        if(found_name == false){
+            item_mem.name = "No Item Name Found";
+        }
+        else{
+            item_mem.name = item_name;
+        }
+
+        is_finding_price = true;
+        is_finding_url = false;
+        find_item_content(search_results->children, item_price, found_price, url, is_finding_price, is_finding_url, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
+
+        if(found_price == false){
+            item_mem.price = "No Price Found";
+        }
+        else{
+            item_mem.price = item_price;
+        }
+
+        is_finding_price = false;
+        is_finding_url = true;
+        find_item_content(search_results->children, item_url, found_url, url, is_finding_price, is_finding_url, url_node_name.c_str(), url_properties_name.c_str(), url_properties_content.c_str());
+        is_finding_url = false;
+
+        if(found_url == false){
+            item_mem.url = "No URL Found";
+        }
+        else{
+            item_mem.url = item_url;
+        }
+
+        //TODO::create function that returns next search result for different websites
+        if (url == AMAZON) {
+            search_results = search_results->next->next;
+        }
+        else if (url == NEWEGG) {
+            search_results = search_results->next;
+        }
+
+        items_list.push_back(item_mem);
+    }
+
+    return items_list;
+}
+

@@ -1,14 +1,11 @@
 #include "html_setup.h"
 #include "html_parse.h"
 #include <algorithm>
-#include <vector>
 #include <memory>
 
 //TODO::output value from each website sorted by (lowest price, rating, number of reviews)
 
 //TODO::output the item URL so that the user can go straight to the item
-
-#define ITEMS_PER_WEBSITE 3
 
 //TODO::implement for multiple websites
 //TODO::implement search functions as a class
@@ -44,175 +41,41 @@ int main(int argc, char *argv[]){
     url_names.push_back(newegg_url);
 
     std::vector< std::unique_ptr<Html_Setup> > scraper_init;
+    std::vector<std::vector<item>> items_list;
+    std::vector<item> website_items;
     int curl_init_result = 0;
-    bool found_results = false;
-    bool found_not_promotional = false;
-    bool found_price = false;
-    bool found_name = false;
-    bool found_url = false;
-    bool is_finding_price = false;
-    bool is_finding_url = false;
-    std::string item_price = "";
-    std::string item_name = "";
-    std::string item_url = "";
-    xmlNode *search_results = NULL;
-    xmlNode *search_results_not_promotional = NULL; //Variable current not in use
-
-    std::string search_node_name = "";
-    std::string search_properties_name = "";
-    std::string search_properties_content = "";
-
-    std::string price_node_name = "";
-    std::string price_properties_name = "";
-    std::string price_properties_content = "";
-
-    std::string name_node_name = "";
-    std::string name_properties_name = "";
-    std::string name_properties_content = "";
-
-    std::string url_node_name = "";
-    std::string url_properties_name = "";
-    std::string url_properties_content = "";
 
     Html_Parse parse_websites;
 
     for(unsigned int url = 0; url < url_names.size(); url++){
         curl_init_result = 0;
-        found_results = false;
-        search_results = NULL;
-
-        switch(url){
-            case AMAZON:
-                search_node_name = AMZN_SEARCH_NODE_NAME;
-                search_properties_name = AMZN_SEARCH_PROPERTIES_NAME;
-                search_properties_content = AMZN_SEARCH_PROPERTIES_CONTENT;
-
-                price_node_name = AMZN_PRICE_NODE_NAME;
-                price_properties_name = AMZN_PRICE_PROPERTIES_NAME;
-                price_properties_content = AMZN_PRICE_PROPERTIES_CONTENT;
-
-                name_node_name = AMZN_NAME_NODE_NAME;
-                name_properties_name = AMZN_NAME_PROPERTIES_NAME;
-                name_properties_content = AMZN_NAME_PROPERTIES_CONTENT;
-
-                url_node_name = AMZN_URL_NODE_NAME;
-                url_properties_name = AMZN_URL_PROPERTIES_NAME;
-                url_properties_content = AMZN_URL_PROPERTIES_CONTENT;
-
-                break;
-            case NEWEGG:
-                search_node_name = EGGZ_SEARCH_NODE_NAME;
-                search_properties_name = EGGZ_SEARCH_PROPERTIES_NAME;
-                search_properties_content = EGGZ_SEARCH_PROPERTIES_CONTENT;
-
-                price_node_name = EGGZ_PRICE_NODE_NAME;
-                price_properties_name = EGGZ_PRICE_PROPERTIES_NAME;
-                price_properties_content = EGGZ_PRICE_PROPERTIES_CONTENT;
-
-                name_node_name = EGGZ_NAME_NODE_NAME;
-                name_properties_name = EGGZ_NAME_PROPERTIES_NAME;
-                name_properties_content = EGGZ_NAME_PROPERTIES_CONTENT;
-                
-                url_node_name = EGGZ_URL_NODE_NAME;
-                url_properties_name = EGGZ_URL_PROPERTIES_NAME;
-                url_properties_content = EGGZ_URL_PROPERTIES_CONTENT;
-
-
-                break;
-            default:
-                break;
-        }
 
         std::unique_ptr<Html_Setup> new_url(new Html_Setup(url_names[url]));
         scraper_init.push_back(std::move(new_url));
         curl_init_result = scraper_init[url]->curl_setup();
         if (curl_init_result == -1) {
-            return -1;
+            std::cout << "Curl initialization failed." << std::endl;
+            break;
         }
 
         scraper_init[url]->xml_setup();
 
-        parse_websites.find_search_results(scraper_init[url]->get_root_element(), search_results, found_results, search_node_name.c_str(), search_properties_name.c_str(), search_properties_content.c_str());
-        if(search_results == NULL){
-            std::cout << "No search results found" << std::endl;
-            return -1;
+        website_items = parse_websites.get_website_items(scraper_init[url].get(), url);
+        items_list.push_back(website_items);
+        website_items.clear();
+
+        std::cout << "URL: " << url_names[url] << std::endl << std::endl;
+
+        for (int i = 0; i < items_list[url].size(); i++) {
+            if(!items_list[url].empty()) {
+                std::cout << "Item " << i+1 << ": "<< std::endl;
+                std::cout << items_list[url][i].name << std::endl;
+                std::cout << items_list[url][i].price << std::endl;
+                std::cout << items_list[url][i].url << std::endl;
+                std::cout << std::endl;
+            }
         }
-         
-        std::cout << "URL: " << url_names[url] << std::endl;
 
-        for(int item_num = 0; item_num < ITEMS_PER_WEBSITE; item_num++){
-            found_price = false;
-            found_name = false;
-            found_url = false;
-            item_price = "";
-            item_name = "";
-            item_url = "";
-            found_not_promotional = false;
-            search_results_not_promotional = NULL;
-
-            
-            if(search_results == NULL){
-                std::cout << "No search results found" << std::endl;
-                break;
-            }
-
-            //only return main results for AMZN
-            if(url == AMAZON){
-                parse_websites.find_search_results(search_results, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
-                if(!found_not_promotional){
-                    std::cout << "Skipping promotional content" << std::endl;
-                    item_num--;
-                    search_results = search_results->next->next;
-                    continue;
-                }
-            }
-        
-            std::cout << "Item " << item_num+1 << ": "<< std::endl;
-
-            is_finding_price = false;
-            parse_websites.find_item_content(search_results->children, item_name, found_name, url, is_finding_price, is_finding_url, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
-            
-            if(found_name == false){
-                std::cout << "No Item Name Found" << std::endl;
-            } 
-            else{
-                std::cout << item_name << std::endl;
-            }
-
-            is_finding_price = true;
-            parse_websites.find_item_content(search_results->children, item_price, found_price, url, is_finding_price, is_finding_url, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
-
-            if(found_price == false){
-                std::cout << "No Price Found" << std::endl;
-            }
-            else{
-                std::cout << item_price << std::endl;
-            }
-            
-            is_finding_price = false;
-            is_finding_url = true;
-            parse_websites.find_item_content(search_results->children, item_url, found_url, url, is_finding_price, is_finding_url, url_node_name.c_str(), url_properties_name.c_str(), url_properties_content.c_str());
-            is_finding_url = false;            
-        
-            if(found_url == false){
-                std::cout << "No URL Found" << std::endl;
-            }
-            else{
-                std::cout << item_url << std::endl;
-            }
-
-
-            //TODO::create function that returns next search result for different websites
-            if (url == AMAZON) {
-                search_results = search_results->next->next;
-            }
-            else if (url == NEWEGG) {
-                search_results = search_results->next;
-            }
-            
-            std::cout << std::endl;
-
-        }
         std::cout << "-----" << std::endl;
     }
 
