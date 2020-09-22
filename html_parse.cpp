@@ -13,14 +13,14 @@ bool Html_Parse::search_properties(xmlAttrPtr html_properties_node, const char* 
     return false;
 }
 
-void Html_Parse::save_content(xmlNodePtr html_tree_node, std::string &content, int url, bool is_finding_price){
+void Html_Parse::save_content(xmlNodePtr html_tree_node, std::string &content, int url, Finding find_item){
     if(html_tree_node->children->type != XML_CDATA_SECTION_NODE && html_tree_node->children->type != XML_TEXT_NODE){
         std::cerr << "Invalid node type for save_content()" << std::endl;
         return;
     }
 
     //TODO::Find way to save content here even if it contains '/n' (std::string s( reinterpret_cast<char const*>(uc), len)
-    if(url == NEWEGG && is_finding_price){
+    if(url == NEWEGG && find_item == Finding::price){
         content = content + '$' + reinterpret_cast<char*>(html_tree_node->children->content);
         content += reinterpret_cast<char*>(html_tree_node->next->children->content);
     }
@@ -44,7 +44,7 @@ void Html_Parse::save_properties_content(xmlAttrPtr html_tree_node_properties, s
     } 
 }
 
-void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_price, bool &found_price, int url, bool is_finding_price){
+void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_price, bool &found_price, int url, Finding find_item){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if(html_tree_node == NULL || found_price){
         return;
@@ -53,11 +53,11 @@ void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_
     if(html_tree_node->children != NULL
             && (strcmp(reinterpret_cast<const char*>(html_tree_node->name), EGGZ_PRICE_DOLLAR) == MATCHING)){
         found_price = true;
-        save_content(html_tree_node, item_price, url, is_finding_price);
+        save_content(html_tree_node, item_price, url, find_item);
     }
 
-    find_newegg_price(html_tree_node->next, item_price, found_price, url, is_finding_price);
-    find_newegg_price(html_tree_node->children, item_price, found_price, url, is_finding_price);
+    find_newegg_price(html_tree_node->next, item_price, found_price, url, find_item);
+    find_newegg_price(html_tree_node->children, item_price, found_price, url, find_item);
 }
 
 //Returns the first search result in the amazon list in order to move to the next item go ->next->next (or find the next div)
@@ -79,7 +79,7 @@ void Html_Parse::find_search_results(xmlNodePtr html_tree_node, xmlNodePtr &sear
 }
 
 //TODO::create enum for is_finding*
-void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_content, bool &found_content, int url, bool is_finding_price, bool is_finding_url, const char *node_name, const char *properties_name, const char *properties_content){
+void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_content, bool &found_content, int url, Finding find_item, const char *node_name, const char *properties_name, const char *properties_content){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if((html_tree_node == NULL) || found_content){
         return;
@@ -88,32 +88,31 @@ void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_
     if(html_tree_node->properties != NULL && html_tree_node->properties->children != NULL){
         if((strcmp(reinterpret_cast<const char*>(html_tree_node->name), node_name) == MATCHING)
                 && search_properties(html_tree_node->properties, properties_name, properties_content)){
-            if(is_finding_url){
+            if(find_item == Finding::url){
                 found_content = true;
                 save_properties_content(html_tree_node->properties, item_content, url);
             }
-            else if(is_finding_price && (url == NEWEGG)){
-                find_newegg_price(html_tree_node, item_content, found_content, url, is_finding_price);
+            else if((find_item == Finding::price) && (url == NEWEGG)){
+                find_newegg_price(html_tree_node, item_content, found_content, url, find_item);
             }
             else{
                 found_content = true;
-                save_content(html_tree_node, item_content, url, is_finding_price);
+                save_content(html_tree_node, item_content, url, find_item);
             }
         }
     }
 
-    find_item_content(html_tree_node->next, item_content, found_content, url, is_finding_price, is_finding_url, node_name, properties_name, properties_content);
-    find_item_content(html_tree_node->children, item_content, found_content, url, is_finding_price, is_finding_url, node_name, properties_name, properties_content);
+    find_item_content(html_tree_node->next, item_content, found_content, url, find_item, node_name, properties_name, properties_content);
+    find_item_content(html_tree_node->children, item_content, found_content, url, find_item, node_name, properties_name, properties_content);
 }
 
 std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int url) {
     std::vector<item> items_list;
     struct item item_mem;
+    Finding find_item;
 
     xmlNode *search_results = NULL;
     xmlNode *search_results_not_promotional = NULL;
-    bool is_finding_price = false;
-    bool is_finding_url = false;
     bool found_results = false;
     bool found_not_promotional = false;
     bool found_name = false;
@@ -159,6 +158,10 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
 
             break;
         case NEWEGG:
+            search_node_name = EGGZ_SEARCH_NODE_NAME;
+            search_properties_name = EGGZ_SEARCH_PROPERTIES_NAME;
+            search_properties_content = EGGZ_SEARCH_PROPERTIES_CONTENT;
+
             price_node_name = EGGZ_PRICE_NODE_NAME;
             price_properties_name = EGGZ_PRICE_PROPERTIES_NAME;
             price_properties_content = EGGZ_PRICE_PROPERTIES_CONTENT;
@@ -171,18 +174,10 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             url_properties_name = EGGZ_URL_PROPERTIES_NAME;
             url_properties_content = EGGZ_URL_PROPERTIES_CONTENT;
 
-            search_node_name = EGGZ_SEARCH_NODE_NAME;
-            search_properties_name = EGGZ_SEARCH_PROPERTIES_NAME;
-            search_properties_content = EGGZ_SEARCH_PROPERTIES_CONTENT;
-
             break;
         default:
             break;
     }
-
-    //
-    //found_results = false;
-    //search_results = NULL;
 
 
     find_search_results(scraper_init->get_root_element(), search_results, found_results, search_node_name.c_str(), search_properties_name.c_str(), search_properties_content.c_str());
@@ -219,9 +214,8 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             }
         }
 
-        is_finding_price = false;
-        is_finding_url = false;
-        find_item_content(search_results->children, item_name, found_name, url, is_finding_price, is_finding_url, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
+        find_item = Finding::name;
+        find_item_content(search_results->children, item_name, found_name, url, find_item, name_node_name.c_str(), name_properties_name.c_str(), name_properties_content.c_str());
 
         if(found_name == false){
             item_mem.name = "No Item Name Found";
@@ -230,9 +224,8 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             item_mem.name = item_name;
         }
 
-        is_finding_price = true;
-        is_finding_url = false;
-        find_item_content(search_results->children, item_price, found_price, url, is_finding_price, is_finding_url, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
+        find_item = Finding::price;
+        find_item_content(search_results->children, item_price, found_price, url, find_item, price_node_name.c_str(), price_properties_name.c_str(), price_properties_content.c_str());
 
         if(found_price == false){
             item_mem.price = "No Price Found";
@@ -241,10 +234,8 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             item_mem.price = item_price;
         }
 
-        is_finding_price = false;
-        is_finding_url = true;
-        find_item_content(search_results->children, item_url, found_url, url, is_finding_price, is_finding_url, url_node_name.c_str(), url_properties_name.c_str(), url_properties_content.c_str());
-        is_finding_url = false;
+        find_item = Finding::url;
+        find_item_content(search_results->children, item_url, found_url, url, find_item, url_node_name.c_str(), url_properties_name.c_str(), url_properties_content.c_str());
 
         if(found_url == false){
             item_mem.url = "No URL Found";

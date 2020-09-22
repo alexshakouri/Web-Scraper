@@ -57,7 +57,6 @@ int main(int argc, char *argv[]){
             std::cout << "Curl initialization failed." << std::endl;
             break;
         }
-
         scraper_init[url]->xml_setup();
 
         website_items = parse_websites.get_website_items(scraper_init[url].get(), url);
@@ -66,7 +65,7 @@ int main(int argc, char *argv[]){
 
         std::cout << "URL: " << url_names[url] << std::endl << std::endl;
 
-        for (int i = 0; i < items_list[url].size(); i++) {
+        for (unsigned int i = 0; i < items_list[url].size(); i++) {
             if(!items_list[url].empty()) {
                 std::cout << "Item " << i+1 << ": "<< std::endl;
                 std::cout << items_list[url][i].name << std::endl;
