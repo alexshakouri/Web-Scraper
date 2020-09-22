@@ -21,8 +21,8 @@
 
 //Find if item is from the search result
 #define AMZN_PROMO_NODE_NAME "span"
-#define AMZN_PROMO_PROPERTIES_NAME "cel_widget_id"
-#define AMZN_PROMO_PROPERTIES_CONTENT "MAIN-SEARCH_RESULTS"
+#define AMZN_PROMO_PROPERTIES_NAME "class"
+#define AMZN_PROMO_PROPERTIES_CONTENT "celwidget slot=MAIN template=SEARCH_RESULTS widgetId=search-results"
 
 //Find url for the item
 #define AMZN_URL_NODE_NAME "a"
