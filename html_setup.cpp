@@ -83,11 +83,6 @@ int Html_Setup::curl_setup() {
         return -1;
     }
 
-    //Output response code for curl
-    long response_code;
-    curl_easy_getinfo(curl_connection, CURLINFO_RESPONSE_CODE, &response_code);
-    std::cout << "response code: " << response_code << std::endl;
-
     curl_easy_cleanup(curl_connection);
 
     return 0;
@@ -97,12 +92,6 @@ void Html_Setup::xml_setup() {
     //Read the HTML
     this->html_tree = htmlReadMemory(this->html_buffer.c_str(), this->html_buffer.length(), NULL, NULL, HTML_PARSE_RECOVER|HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING);
     this->root_element = xmlDocGetRootElement(this->html_tree);
-
-    //debug
-    /*std::cout << "Debug" << std::endl;
-    xmlBufferPtr buffer = xmlBufferCreate();
-    int size = xmlNodeDump(buffer, this->html_tree, this->root_element, 0, 1);
-    std::cout << buffer->content << std::endl;*/
 }
 
 void Html_Setup::xml_cleanup() {

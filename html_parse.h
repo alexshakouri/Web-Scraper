@@ -31,7 +31,8 @@ private:
     bool search_properties(xmlAttrPtr html_properties_node, const char* properties_name, const char* properties_content);
     void save_content(xmlNodePtr html_tree_node, std::string &content, int url, Finding find_item);
     void find_newegg_price(xmlNodePtr html_tree_node, std::string &item_price, bool &found_price, int url, Finding find_item);
-    void save_properties_content(xmlAttrPtr html_tree_node, std::string &content, int url);
+    void save_url_content(xmlAttrPtr html_tree_node, std::string &content, int url);
+    xmlNode* get_next_item(xmlNode *search_results, int url);
 
 public:
     void find_search_results(xmlNodePtr html_tree_node, xmlNodePtr &search_result, bool &found_results, const char* node_name, const char* properties_name, const char* properties_content);

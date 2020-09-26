@@ -5,14 +5,9 @@
 
 //TODO::output value from each website sorted by (lowest price, rating, number of reviews)
 
-//TODO::output the item URL so that the user can go straight to the item
-
 //TODO::implement for multiple websites
-//TODO::implement search functions as a class
-//TODO::have functions return bool found_content
 std::string spaces_to_underscores(std::string user_input);
 
-//TODO::include user input with error checks (multiple arguements)
 int main(int argc, char *argv[]){
     std::string user_input = "";
     if(argc == 1){

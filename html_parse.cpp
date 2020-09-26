@@ -19,29 +19,14 @@ void Html_Parse::save_content(xmlNodePtr html_tree_node, std::string &content, i
         return;
     }
 
-    //TODO::Find way to save content here even if it contains '/n' (std::string s( reinterpret_cast<char const*>(uc), len)
+    //If content contains '/n' then will stop saving there
     if(url == NEWEGG && find_item == Finding::price){
         content = content + '$' + reinterpret_cast<char*>(html_tree_node->children->content);
         content += reinterpret_cast<char*>(html_tree_node->next->children->content);
     }
     else{
-        // Amazon: finding item name and item price don't require any additional manipulation
         content = reinterpret_cast<char*>(html_tree_node->children->content);
     }
-}
-
-void Html_Parse::save_properties_content(xmlAttrPtr html_tree_node_properties, std::string &content, int url){    
-    if(url == AMAZON){
-        content += "https://www.amazon.com";
-    }
-    
-    while(html_tree_node_properties != NULL){
-        if(strcmp(reinterpret_cast<const char*>(html_tree_node_properties->name), "href") == MATCHING){
-            content += reinterpret_cast<char*>(html_tree_node_properties->children->content);
-            break;
-        }
-        html_tree_node_properties = html_tree_node_properties->next;
-    } 
 }
 
 void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_price, bool &found_price, int url, Finding find_item){
@@ -58,6 +43,33 @@ void Html_Parse::find_newegg_price(xmlNodePtr html_tree_node, std::string &item_
 
     find_newegg_price(html_tree_node->next, item_price, found_price, url, find_item);
     find_newegg_price(html_tree_node->children, item_price, found_price, url, find_item);
+}
+
+void Html_Parse::save_url_content(xmlAttrPtr html_tree_node_properties, std::string &content, int url){    
+    if(url == AMAZON){
+        content += "https://www.amazon.com";
+    }
+    
+    while(html_tree_node_properties != NULL){
+        if(strcmp(reinterpret_cast<const char*>(html_tree_node_properties->name), "href") == MATCHING){
+            content += reinterpret_cast<char*>(html_tree_node_properties->children->content);
+            break;
+        }
+        html_tree_node_properties = html_tree_node_properties->next;
+    } 
+}
+
+xmlNode* Html_Parse::get_next_item(xmlNode *search_results, int url){
+    switch(url){
+        case(AMAZON):
+            return search_results->next->next;
+            break;
+        case(NEWEGG):
+            return search_results->next;
+        default:
+            return search_results;
+            break;
+    } 
 }
 
 //Returns the first search result in the amazon list in order to move to the next item go ->next->next (or find the next div)
@@ -78,7 +90,6 @@ void Html_Parse::find_search_results(xmlNodePtr html_tree_node, xmlNodePtr &sear
     find_search_results(html_tree_node->children, search_result, found_results, node_name, properties_name, properties_content);
 }
 
-//TODO::create enum for is_finding*
 void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_content, bool &found_content, int url, Finding find_item, const char *node_name, const char *properties_name, const char *properties_content){
     //In order to find the price I need to not only search through the children and next but properties node as well
     if((html_tree_node == NULL) || found_content){
@@ -90,7 +101,7 @@ void Html_Parse::find_item_content(xmlNodePtr html_tree_node, std::string &item_
                 && search_properties(html_tree_node->properties, properties_name, properties_content)){
             if(find_item == Finding::url){
                 found_content = true;
-                save_properties_content(html_tree_node->properties, item_content, url);
+                save_url_content(html_tree_node->properties, item_content, url);
             }
             else if((find_item == Finding::price) && (url == NEWEGG)){
                 find_newegg_price(html_tree_node, item_content, found_content, url, find_item);
@@ -186,6 +197,7 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
         return items_list;
     }
     if(url == NEWEGG){
+        //Gets the first 10 results from NEWEGG html format
         search_results = search_results->children;
     }
 
@@ -203,13 +215,13 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             break;
         }
 
-        //only return main results for AMZN
+        //skip the promotional content from AMZN
         if(url == AMAZON){
             find_search_results(search_results, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
             if(!found_not_promotional){
                 std::cout << "Skipping promotional content" << std::endl;
                 item_num--;
-                search_results = search_results->next->next;
+                search_results = get_next_item(search_results, url);
                 continue;
             }
         }
@@ -244,13 +256,7 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
             item_mem.url = item_url;
         }
 
-        //TODO::create function that returns next search result for different websites
-        if (url == AMAZON) {
-            search_results = search_results->next->next;
-        }
-        else if (url == NEWEGG) {
-            search_results = search_results->next;
-        }
+        search_results = get_next_item(search_results, url);
 
         items_list.push_back(item_mem);
     }
