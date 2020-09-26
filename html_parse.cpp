@@ -217,7 +217,7 @@ std::vector<item> Html_Parse::get_website_items(Html_Setup *scraper_init, int ur
 
         //skip the promotional content from AMZN
         if(url == AMAZON){
-            find_search_results(search_results, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
+            find_search_results(search_results->children, search_results_not_promotional, found_not_promotional, AMZN_PROMO_NODE_NAME, AMZN_PROMO_PROPERTIES_NAME, AMZN_PROMO_PROPERTIES_CONTENT);
             if(!found_not_promotional){
                 std::cout << "Skipping promotional content" << std::endl;
                 item_num--;

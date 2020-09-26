@@ -7,7 +7,7 @@
 //Find the first search result
 #define AMZN_SEARCH_NODE_NAME "div"
 #define AMZN_SEARCH_PROPERTIES_NAME "data-index"
-#define AMZN_SEARCH_PROPERTIES_CONTENT "1"
+#define AMZN_SEARCH_PROPERTIES_CONTENT "0"
 
 //Find the price of the item
 #define AMZN_PRICE_NODE_NAME "span"
