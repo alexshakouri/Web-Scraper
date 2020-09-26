@@ -1,7 +1,8 @@
 # Web-Scraper
-Give it the name of product and it outputs the price of that item at multiple websites.
-Automatically buy products listed.
+Input name of product and it outputs the price of multiple items from multiple websites.
+Option to buy products listed.
 
-Websites:
+## Websites:
 www.amazon.com
+www.newegg.com
 
